@@ -157,7 +157,7 @@ python-versions = ">=3.7.0"
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -168,7 +168,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 
@@ -1122,7 +1122,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e94629ae579aaa07599ed567911dd030db7e10bc408b581980fe65dd7a7d1b41"
+content-hash = "60da595891b3f7ccdb5e694b44997e8203a0cc457a3de43adf60a4102f05c167"
 
 [metadata.files]
 anyio = []
