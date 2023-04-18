@@ -1,4 +1,4 @@
-from kodekloud_dl import __version__
+from kodekloud_downloader import __version__
 
 
 def test_version():
