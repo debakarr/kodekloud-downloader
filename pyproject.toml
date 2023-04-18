@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Simple downloaded for https://kodekloud.com/"
 readme = "README.md"
 authors = ["Roy, Debakar <debakar.roy@outlook.com>"]
+repository = "https://github.com/debakarr/kodekloud-downloader"
 
 [tool.poetry.dependencies]
 python = "^3.8"
