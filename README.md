@@ -206,3 +206,5 @@ kodekloud dl -o . -c <YOUR COOKIE HERE INSIDE DOUBLE QUOTES>
 +-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
 Enter the number of the course you want to select: 35
 ```
+
+![](static/demo-select-download.gif)
