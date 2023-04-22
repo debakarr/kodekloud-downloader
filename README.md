@@ -111,9 +111,10 @@ This will display the FFmpeg version and build information, confirming that the 
 
 ## How to get cookie
 - Sign in to kodekloud.com
-- Right Click -> Inspect -> Go to Network Tab -> Reload -> Select the first resource and copy the cookie:
+- Download extension such as [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc/related)
+- Download the cookie and save it in some location (You can name it something like `cookie.txt`).
 
-![](https://i.imgur.com/MwkR9u6.png)
+![](/static/cookie-demo.png)
 
 ## 💻 Installation
 
@@ -145,7 +146,7 @@ Here is an example:
 ### 🔍 Download entire course from list of available course in current folder
 
 ```css
-kodekloud dl -o . -c <YOUR COOKIE HERE INSIDE DOUBLE QUOTES>
+kodekloud dl -o . -c /path/to/cookie.txt
 +-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
 | No. | Name                                                                        | Type    | Categories                                                 |
 +-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+

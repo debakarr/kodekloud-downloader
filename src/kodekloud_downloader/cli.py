@@ -40,7 +40,7 @@ def kodekloud(verbose):
     "--cookie",
     "-c",
     required=True,
-    help="Cookie to download the courses.",
+    help="Cookie file. Course should be accessible via this.",
 )
 def dl(course_url, quality: str, output_dir: Union[Path, str], cookie):
     if course_url is None:

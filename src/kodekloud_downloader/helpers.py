@@ -42,7 +42,8 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> in
         "concurrent_fragment_downloads": 15,
         "outtmpl": f"{output_path}.%(ext)s",
         "verbose": logger.getEffectiveLevel() == logging.DEBUG,
-        "cookie": cookie,
+        "cookiefile": cookie,
+        "merge_output_format": "mkv",
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

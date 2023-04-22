@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, Path]) -> None:
-    page = requests.get(url, headers={"Cookie": cookie})
+    page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     course_name = soup.find("h1", class_="course_title").text.strip()
     main_lesson_content = soup.find("div", class_="lessons_main__content")
@@ -33,9 +33,10 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
             if lesson.is_video:
                 logger.info(f"Writing video file... {file_path}...")
                 file_path.parent.mkdir(parents=True, exist_ok=True)
+                logger.info(f"Parsing url: {lesson.url}")
                 download_video(url=lesson.url, output_path=file_path, cookie=cookie, quality=quality)
             else:
-                page = requests.get(lesson.url, headers={"Cookie": cookie})
+                page = requests.get(lesson.url)
                 soup = BeautifulSoup(page.content, "html.parser")
                 content = soup.find("div", class_="learndash_content_wrap")
                 # TODO: Fix this part. Most probably resources are not getting downloaded
