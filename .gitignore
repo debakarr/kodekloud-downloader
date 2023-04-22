@@ -131,4 +131,4 @@ dmypy.json
 # Session specific
 .vscode/
 KodeKloud/
-cookie*
+cookie*.txt
