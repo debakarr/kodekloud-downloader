@@ -13,9 +13,9 @@ Please read the following disclaimer carefully before using the Downloader CLI T
 
 ## Features
 
-- Download video lessons in selected quality
-- Download resources (PDFs, etc.) alongside video lessons
-- Organizes downloaded content in a structured folder hierarchy
+- [x] Download video lessons in selected quality
+- [x] Organizes downloaded content in a structured folder hierarchy
+- [ ] Download resources (PDFs, etc.) alongside video lessons
 
 ---
 
