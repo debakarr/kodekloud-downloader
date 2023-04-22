@@ -1,7 +1,13 @@
 # KodeKloud Downloader
 
 ## Disclaimer
-Please use this only to keep your local copy. Please don't distribute the courses illegally. You will be responsible for the legal consequences. 
+Please read the following disclaimer carefully before using the Downloader CLI Tool.
+
+- The CLI Tool is intended for personal use only. By using this tool, you agree to use it at your own risk and assume full responsibility for any consequences that may arise from its use. The developers and contributors of this tool are not responsible for any damages or losses that may occur from its use.
+
+- The use of this tool to download premium courses is for educational purposes only. You must have the proper authorization or permission from the course provider to access the content legally.
+
+- It is strictly prohibited to distribute or share the downloaded content through any means, including but not limited to uploading to file-sharing platforms, torrent sites, or any other form of digital or physical distribution. Doing so is a violation of copyright laws and may result in legal consequences.
 
 ---
 
@@ -122,7 +128,7 @@ pip install -U kodekloud-downloader
 After installing the package, you can use the `kodekloud dl` command to download shows from the command line.
 
 ```css
-kisskh dl --help
+kodekloud dl --help
 Usage: kodekloud dl [OPTIONS] [COURSE_URL]
 
 Options:
@@ -134,13 +140,7 @@ Options:
   --help                          Show this message and exit.
 ```
 
-Here are some examples:
-
-### 🔗 Direct download entire course in highest quality available in current folder
-
-```css
-kodekloud dl "https://kodekloud.com/courses/amazon-elastic-container-service-aws-ecs/" -o . -c <YOUR COOKIE HERE INSIDE DOUBLE QUOTES>
-```
+Here is an example:
 
 ### 🔍 Download entire course from list of available course in current folder
 
