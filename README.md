@@ -209,3 +209,7 @@ Enter the number of the course you want to select: 35
 ```
 
 ![](static/demo-select-download.gif)
+
+## Colab Notebook to download directly in Personal GDrive
+
+You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing) with your google account were you want to download the course. Please note that you should open with the same account for which you want to link the drive.
