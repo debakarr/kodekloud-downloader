@@ -4,7 +4,7 @@ from typing import Union
 
 import markdownify
 import requests
-import yt_dlp_patch  # noqa
+import kodekloud_downloader.yt_dlp_patch  # noqa
 import yt_dlp
 from bs4 import BeautifulSoup
 
