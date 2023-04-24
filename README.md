@@ -120,8 +120,13 @@ This will display the FFmpeg version and build information, confirming that the 
 
 To install kodekloud-downloader, simply run the following command:
 
-```css
+```console
 pip install -U kodekloud-downloader
+```
+
+You can also install the latest main changes:
+```console
+pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
 
 ## 📚 Usage
