@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 from typing import Union
-
+import youtube_dl
 import markdownify
 import requests
 from bs4 import BeautifulSoup
@@ -34,7 +34,12 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
                 logger.info(f"Writing video file... {file_path}...")
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Parsing url: {lesson.url}")
-                download_video(url=lesson.url, output_path=file_path, cookie=cookie, quality=quality)
+                try:
+                    download_video(url=lesson.url, output_path=file_path, cookie=cookie, quality=quality)
+                except youtube_dl.utils.UnsupportedError as ex:
+                    logger.error(f"Could not download video in link {lesson.url}. Please open link manually and verify that video exists!")
+                except youtube_dl.utils.DownloadError as ex:
+                    logger.error(f"Access denied while downloading video or audio file from link {lesson.url}")
             else:
                 page = requests.get(lesson.url)
                 soup = BeautifulSoup(page.content, "html.parser")

@@ -5,7 +5,7 @@ from typing import List
 
 import prettytable
 import requests
-import yt_dlp
+import youtube_dl
 
 from kodekloud_downloader.models import Course
 
@@ -46,8 +46,8 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> in
         "merge_output_format": "mkv",
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(url)
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
 
 
 def normalize_name(name: str) -> str:
