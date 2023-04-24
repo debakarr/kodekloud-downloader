@@ -15,7 +15,7 @@ Please read the following disclaimer carefully before using the Downloader CLI T
 
 - [x] Download video lessons in selected quality
 - [x] Organizes downloaded content in a structured folder hierarchy
-- [ ] Download resources (PDFs, etc.) alongside video lessons
+- [x] Download resources (PDFs, etc.) alongside video lessons
 
 ---
 
