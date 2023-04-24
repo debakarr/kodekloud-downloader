@@ -50,7 +50,10 @@ class Course:
     def make(cls, course_card) -> "Course":
         name = course_card.find("div", class_="text-size-20").text.strip()
         course_type = course_card.find_all("div", class_="course_type")[-1].text.strip()
-        categories = [category.text.strip() for category in course_card.find_all("div", class_="course_category")]
+        categories = [
+            category.text.strip()
+            for category in course_card.find_all("div", class_="course_category")
+        ]
         link = f"https://kodekloud.com/{course_card.find_all('a', class_='course_link')[-1].get('href')}"
 
         return cls(name=name, course_type=course_type, categories=categories, link=link)

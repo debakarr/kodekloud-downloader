@@ -5,7 +5,7 @@ from typing import List
 
 import prettytable
 import requests
-import youtube_dl
+import yt_dlp
 
 from kodekloud_downloader.models import Course
 
@@ -17,7 +17,9 @@ def select_course(courses: List[Course]) -> Course:
     table.field_names = ["No.", "Name", "Type", "Categories"]
 
     for i, course in enumerate(courses):
-        table.add_row([i + 1, course.name, course.course_type, ", ".join(course.categories)])
+        table.add_row(
+            [i + 1, course.name, course.course_type, ", ".join(course.categories)]
+        )
 
     table.align["No."] = "l"
     table.align["Name"] = "l"
@@ -46,8 +48,8 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> in
         "merge_output_format": "mkv",
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(url)
 
 
 def normalize_name(name: str) -> str:

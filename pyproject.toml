@@ -17,7 +17,7 @@ prettytable = "^3.7.0"
 markdownify = "^0.11.6"
 validators = "^0.20.0"
 click = "^8.1.3"
-youtube-dl = {git = "https://github.com/ytdl-org/youtube-dl", rev = "master"}
+yt-dlp = "^2023.3.4"
 
 [tool.poetry.dev-dependencies]
 datamodel-code-generator = { extras = ["http"], version = "^0.17.1" }

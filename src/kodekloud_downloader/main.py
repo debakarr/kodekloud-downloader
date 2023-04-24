@@ -1,18 +1,27 @@
 import logging
 from pathlib import Path
 from typing import Union
-import youtube_dl
+
 import markdownify
 import requests
+import yt_dlp_patch  # noqa
+import yt_dlp
 from bs4 import BeautifulSoup
 
-from kodekloud_downloader.helpers import download_all_pdf, download_video, is_normal_content, normalize_name
+from kodekloud_downloader.helpers import (
+    download_all_pdf,
+    download_video,
+    is_normal_content,
+    normalize_name,
+)
 from kodekloud_downloader.models import Topic
 
 logger = logging.getLogger(__name__)
 
 
-def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, Path]) -> None:
+def download_course(
+    url: str, cookie: str, quality: str, output_dir: Union[str, Path]
+) -> None:
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     course_name = soup.find("h1", class_="course_title").text.strip()
@@ -35,11 +44,21 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Parsing url: {lesson.url}")
                 try:
-                    download_video(url=lesson.url, output_path=file_path, cookie=cookie, quality=quality)
-                except youtube_dl.utils.UnsupportedError as ex:
-                    logger.error(f"Could not download video in link {lesson.url}. Please open link manually and verify that video exists!")
-                except youtube_dl.utils.DownloadError as ex:
-                    logger.error(f"Access denied while downloading video or audio file from link {lesson.url}")
+                    download_video(
+                        url=lesson.url,
+                        output_path=file_path,
+                        cookie=cookie,
+                        quality=quality,
+                    )
+                except yt_dlp.utils.UnsupportedError as ex:
+                    logger.error(
+                        f"Could not download video in link {lesson.url}. "
+                        "Please open link manually and verify that video exists!"
+                    )
+                except yt_dlp.utils.DownloadError as ex:
+                    logger.error(
+                        f"Access denied while downloading video or audio file from link {lesson.url}"
+                    )
             else:
                 page = requests.get(lesson.url)
                 soup = BeautifulSoup(page.content, "html.parser")
@@ -51,4 +70,6 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
                     file_path.with_suffix(".md").write_text(
                         markdownify.markdownify(content.prettify()), encoding="utf-8"
                     )
-                    download_all_pdf(content=content, download_path=file_path.parent, cookie=cookie)
+                    download_all_pdf(
+                        content=content, download_path=file_path.parent, cookie=cookie
+                    )
