@@ -21,6 +21,7 @@ Please read the following disclaimer carefully before using the Downloader CLI T
 
 ## Prerequisites
 
+- **User need to enroll in the course before using the cli tool to download it**
 - Python 3.8 or higher
 - ffmpeg
 
