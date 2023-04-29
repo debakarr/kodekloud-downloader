@@ -234,6 +234,40 @@ KodeKloud
         3 - Mock Exam – 1 – Solution 1957.mkv (98.90 MB, 0:19:57)
         5 - Mock Exam – 2 – Solution 1750.en-x-autogen.vtt (21.27 KB)
         5 - Mock Exam – 2 – Solution 1750.mkv (89.39 MB, 0:17:50)
+  Lens – Kubernetes IDE
+    1 - Lens Introduction 8 Topics
+        1 - Lens Introduction 0603.mkv (21.39 MB, 0:06:03)
+        2 - Installing Lens 0052.mkv (3.27 MB, 0:00:51)
+        3 - Adding and Removing Clusters 0607.mkv (20.27 MB, 0:06:07)
+        4 - Using Helm Charts 0408.mkv (23.74 MB, 0:04:07)
+        5 - Using Extensions 0338.mkv (14.82 MB, 0:03:37)
+        6 - Lens Spaces 1100.mkv (26.89 MB, 0:10:59)
+  Linode  Kubernetes Engine
+    1 - Introduction 2 Topics
+        1 - Course Introduction 0136.en.vtt (2.22 KB)
+        1 - Course Introduction 0136.mkv (40.01 MB, 0:01:35)
+        2 - Why LKE.en.vtt (5.73 KB)
+        2 - Why LKE.mkv (109.26 MB, 0:04:00)
+        3 - Overview and navigation of the Linode Kubernetes Engine dashboard 0303.en.vtt (4.19 KB)
+        3 - Overview and navigation of the Linode Kubernetes Engine dashboard 0303.mkv (10.79 MB, 0:03:03)
+        4 - Creating and deleting clusters 0512.en.vtt (7.64 KB)
+        4 - Creating and deleting clusters 0512.mkv (17.76 MB, 0:05:11)
+        6 - Deploying an LKE cluster using Terraform 0404.en.vtt (5.56 KB)
+        6 - Deploying an LKE cluster using Terraform 0404.mkv (20.24 MB, 0:04:04)
+        7 - Scaling clusters 0231.en.vtt (3.08 KB)
+        7 - Scaling clusters 0231.mkv (8.58 MB, 0:02:30)
+        8 - Managing clusters with the Linode CLI 0422.en.vtt (5.95 KB)
+        8 - Managing clusters with the Linode CLI 0422.mkv (22.82 MB, 0:04:21)
+        9 - Using the k8s dashboard on LKE 0432.en.vtt (6.56 KB)
+        9 - Using the k8s dashboard on LKE 0432.mkv (18.20 MB, 0:04:32)
+        10 - Upgrading the LKE cluster 0324.en.vtt (4.21 KB)
+        10 - Upgrading the LKE cluster 0324.mkv (12.70 MB, 0:03:23)
+        11 - Deploying an application to LKE intro 0327.en.vtt (4.35 KB)
+        11 - Deploying an application to LKE intro 0327.mkv (17.51 MB, 0:03:27)
+        12 - Installing HashiCorp Consul Service Mesh 0517.en.vtt (6.93 KB)
+        12 - Installing HashiCorp Consul Service Mesh 0517.mkv (30.07 MB, 0:05:16)
+        13 - Conclusion 0105.en-x-autogen.vtt (2.04 KB)
+        13 - Conclusion 0105.mkv (23.60 MB, 0:01:04)
 KodeKloud
   Ultimate Certified Kubernetes Application Developer CKAD Mock Exam Series
     1 - Certified Kubernetes Application Developer Mock Exam Series
