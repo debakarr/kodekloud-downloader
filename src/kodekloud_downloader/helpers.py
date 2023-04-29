@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 import string
 from pathlib import Path
 from typing import List
@@ -7,26 +8,59 @@ from typing import List
 import prettytable
 import requests
 import yt_dlp
+from moviepy.editor import VideoFileClip
 
 from kodekloud_downloader.models import Course
 
 logger = logging.getLogger(__name__)
 
 
-def select_course(courses: List[Course]) -> Course:
+from typing import List
+
+
+def parse_input(input_str: str) -> List[int]:
     """
-    Display a table of courses and ask the user to select one by entering its number.
+    Parse the input string and return a list of integers based on the given logic.
+
+    :param input_str: A string representing the input ranges.
+    :rtype: A list of integers.
+    :raises ValueError: If an invalid range is encountered.
+
+    Examples:
+        >>> parse_input('1')
+        [1]
+        >>> parse_input('1-5')
+        [1, 2, 3, 4, 5]
+        >>> parse_input('1-3,6-8,10-11')
+        [1, 2, 3, 6, 7, 8, 10, 11]
+    """
+    ranges = input_str.split(",")
+    result = []
+
+    for r in ranges:
+        if "-" in r:
+            start, end = map(int, r.split("-"))
+            if start > end:
+                raise ValueError(f"Invalid range: {r}")
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(r))
+
+    return result
+
+
+def select_courses(courses: List[Course]) -> List[Course]:
+    """
+    Display a table of courses and ask the user to select one or multiple courses by entering its number.
 
     :param courses: A list of Course objects to choose from
-    :return: The selected Course object
+    :return: The selected list of Course object
     """
     table = prettytable.PrettyTable()
     table.field_names = ["No.", "Name", "Type", "Categories"]
 
     for i, course in enumerate(courses):
-        table.add_row(
-            [i + 1, course.name, course.course_type, ", ".join(course.categories)]
-        )
+        table.add_row([i + 1, course.name, course.course_type, ", ".join(course.categories)])
 
     table.align["No."] = "l"
     table.align["Name"] = "l"
@@ -35,10 +69,14 @@ def select_course(courses: List[Course]) -> Course:
 
     print(table)
 
-    selected_course = input("Enter the number of the course you want to select: ")
-    course = courses[int(selected_course) - 1]
+    user_selected_courses = []
+    selected_courses = parse_input(
+        input("Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): ")
+    )
+    for selected_course in selected_courses:
+        user_selected_courses.append(courses[int(selected_course) - 1])
 
-    return course
+    return user_selected_courses
 
 
 def normalize_name(name: str) -> str:
@@ -116,3 +154,20 @@ def file_hash(file_path: Path, hash_algorithm: str = "sha256") -> str:
         while chunk := file.read(8192):
             hash_func.update(chunk)
     return hash_func.hexdigest()
+
+
+def get_video_info(file_path: str) -> tuple:
+    """
+    Get the size and duration of a video file.
+
+    :param file_path: The path to the video file.
+    :type file_path: str
+    :return: A tuple containing the file size in bytes and the duration in seconds.
+    :rtype: tuple
+    """
+    file_size = os.path.getsize(file_path)
+
+    with VideoFileClip(file_path) as video:
+        duration = video.duration
+
+    return file_size, duration

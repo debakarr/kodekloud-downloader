@@ -6,7 +6,7 @@ import click
 import validators
 
 from kodekloud_downloader.enums import Quality
-from kodekloud_downloader.helpers import select_course
+from kodekloud_downloader.helpers import select_courses
 from kodekloud_downloader.main import download_course
 from kodekloud_downloader.models import get_all_course
 
@@ -14,9 +14,7 @@ from kodekloud_downloader.models import get_all_course
 @click.group()
 @click.option("-v", "--verbose", count=True, help="Increase log level verbosity")
 def kodekloud(verbose):
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
-    )
+    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     if verbose == 1:
         logging.getLogger().setLevel(logging.INFO)
     elif verbose >= 2:
@@ -47,17 +45,16 @@ def kodekloud(verbose):
 def dl(course_url, quality: str, output_dir: Union[Path, str], cookie):
     if course_url is None:
         courses = get_all_course()
-        selected_course = select_course(courses)
-        download_course(
-            url=selected_course.link,
-            cookie=cookie,
-            quality=quality,
-            output_dir=output_dir,
-        )
+        selected_courses = select_courses(courses)
+        for selected_course in selected_courses:
+            download_course(
+                url=selected_course.link,
+                cookie=cookie,
+                quality=quality,
+                output_dir=output_dir,
+            )
     elif validators.url(course_url):
-        download_course(
-            url=course_url, cookie=cookie, quality=quality, output_dir=output_dir
-        )
+        download_course(url=course_url, cookie=cookie, quality=quality, output_dir=output_dir)
     else:
         logging.error("Please enter a valid URL")
         SystemExit(1)

@@ -10,7 +10,7 @@ import kodekloud_downloader.yt_dlp_patch  # noqa
 from kodekloud_downloader.helpers import (
     download_all_pdf,
     download_video,
-    file_hash,
+    get_video_info,
     is_normal_content,
     normalize_name,
 )
@@ -22,9 +22,7 @@ import yt_dlp  # isort: skip
 logger = logging.getLogger(__name__)
 
 
-def download_course(
-    url: str, cookie: str, quality: str, output_dir: Union[str, Path]
-) -> None:
+def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, Path]) -> None:
     """
     Download a course from KodeKloud.
 
@@ -40,23 +38,20 @@ def download_course(
     topics = main_lesson_content.find_all("div", class_="w-dyn-item")
     items = [Topic.make(topic) for topic in topics]
 
-    hash_of_download_videos = set()
+    video_infos = set()
     for i, item in enumerate(items, start=1):
         for j, lesson in enumerate(item.lessons, start=1):
-            file_path = create_file_path(
-                output_dir, course_name, i, item.name, j, lesson.name
-            )
+            file_path = create_file_path(output_dir, course_name, i, item.name, j, lesson.name)
 
             if lesson.is_video:
                 download_video_lesson(lesson, file_path, cookie, quality)
-                hash_of_download_video = file_hash(file_path.with_suffix(".mkv"))
-                if hash_of_download_video in hash_of_download_videos:
-                    logger.warning(
+                video_info = get_video_info(str(file_path.with_suffix(".mkv")))
+                if video_info in video_infos:
+                    raise SystemExit(
                         "Your cookie might have expired or you don't have access to the course."
-                        "Please refresh/regenerate the cookie or enroll in the course and try again."
+                        "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
                     )
-                    SystemExit(1)
-                hash_of_download_videos.add(hash_of_download_video)
+                video_infos.add(video_info)
             else:
                 download_resource_lesson(lesson, file_path, cookie)
 
@@ -110,13 +105,10 @@ def download_video_lesson(lesson, file_path: Path, cookie: str, quality: str) ->
         )
     except yt_dlp.utils.UnsupportedError as ex:
         logger.error(
-            f"Could not download video in link {lesson.url}. "
-            "Please open link manually and verify that video exists!"
+            f"Could not download video in link {lesson.url}. " "Please open link manually and verify that video exists!"
         )
     except yt_dlp.utils.DownloadError as ex:
-        logger.error(
-            f"Access denied while downloading video or audio file from link {lesson.url}"
-        )
+        logger.error(f"Access denied while downloading video or audio file from link {lesson.url}")
 
 
 def download_resource_lesson(lesson, file_path: Path, cookie: str) -> None:
@@ -134,7 +126,5 @@ def download_resource_lesson(lesson, file_path: Path, cookie: str) -> None:
     if content and is_normal_content(content):
         logger.info(f"Writing resource file... {file_path}...")
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.with_suffix(".md").write_text(
-            markdownify.markdownify(content.prettify()), encoding="utf-8"
-        )
+        file_path.with_suffix(".md").write_text(markdownify.markdownify(content.prettify()), encoding="utf-8")
         download_all_pdf(content=content, download_path=file_path.parent, cookie=cookie)
