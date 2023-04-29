@@ -44,13 +44,13 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
             file_path = create_file_path(output_dir, course_name, i, item.name, j, lesson.name)
 
             if lesson.is_video:
-                download_video_lesson(lesson, file_path, cookie, quality)
-                video_info = get_video_info(str(file_path.with_suffix(".mkv")))
+                video_info = get_video_info(lesson.url, cookie=cookie).get("url")
                 if video_info in video_infos:
                     raise SystemExit(
                         "Your cookie might have expired or you don't have access to the course."
                         "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
                     )
+                download_video_lesson(lesson, file_path, cookie, quality)
                 video_infos.add(video_info)
             else:
                 download_resource_lesson(lesson, file_path, cookie)

@@ -1,6 +1,4 @@
-import hashlib
 import logging
-import os
 import string
 from pathlib import Path
 from typing import List
@@ -8,7 +6,6 @@ from typing import List
 import prettytable
 import requests
 import yt_dlp
-from moviepy.editor import VideoFileClip
 
 from kodekloud_downloader.models import Course
 
@@ -106,6 +103,7 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         "cookiefile": cookie,
         "merge_output_format": "mkv",
         "writesubtitles": True,
+        "no_write_sub": True,
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -141,33 +139,17 @@ def download_all_pdf(content, download_path: Path, cookie: str) -> None:
             file_name.write_bytes(response.content)
 
 
-def file_hash(file_path: Path, hash_algorithm: str = "sha256") -> str:
-    """
-    Calculate the hash of a file using the specified algorithm.
+def get_video_info(url: str, cookie: str):
+    ydl_opts = {
+        "skip_download": True,
+        "print_json": True,
+        "quiet": True,
+        "extract_flat": True,
+        "simulate": True,
+        "no_warnings": True,
+        "cookiefile": cookie,
+    }
 
-    :param file_path: The path to the file
-    :param hash_algorithm: The hashing algorithm to use (default: 'sha256')
-    :return: The calculated hash as a hexadecimal string
-    """
-    hash_func = hashlib.new(hash_algorithm)
-    with open(file_path, "rb") as file:
-        while chunk := file.read(8192):
-            hash_func.update(chunk)
-    return hash_func.hexdigest()
-
-
-def get_video_info(file_path: str) -> tuple:
-    """
-    Get the size and duration of a video file.
-
-    :param file_path: The path to the video file.
-    :type file_path: str
-    :return: A tuple containing the file size in bytes and the duration in seconds.
-    :rtype: tuple
-    """
-    file_size = os.path.getsize(file_path)
-
-    with VideoFileClip(file_path) as video:
-        duration = video.duration
-
-    return file_size, duration
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return info
