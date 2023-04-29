@@ -211,7 +211,7 @@ kodekloud dl -o . -c /path/to/cookie.txt
 | 53  | Puppet for the Absolute Beginners Course                                    | Premium | Automation, Devops, IAC                                    |
 | 54  | GIT for Beginners                                                           | Premium | Devops, Programming                                        |
 +-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
-Enter the number of the course you want to select: 35
+Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): 1-3,7-9,10,13,55
 ```
 
 ![](static/demo-select-download.gif)
