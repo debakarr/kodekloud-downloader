@@ -33,9 +33,12 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
     """
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    course_name = soup.find("h1", class_="course_title").text.strip()
-    main_lesson_content = soup.find("div", class_="lessons_main__content")
-    topics = main_lesson_content.find_all("div", class_="w-dyn-item")
+    course_name_tag = soup.find("h1", class_="course_title") or soup.find("h1", class_="entry-title")
+    course_name = course_name_tag.text.strip()
+    main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find("div", class_="ld-lesson-list")
+    topics = main_lesson_content.find_all("div", class_="w-dyn-item") or main_lesson_content.find_all(
+        "div", class_="ld-item-list-items"
+    )
     items = [Topic.make(topic) for topic in topics]
 
     video_infos = set()
