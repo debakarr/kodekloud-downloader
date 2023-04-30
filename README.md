@@ -130,6 +130,7 @@ You can also install the latest main changes:
 pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
 
+
 ## 📚 Usage
 
 After installing the package, you can use the `kodekloud dl` command to download shows from the command line.
@@ -219,3 +220,28 @@ Enter the courses you want to select (Multiple courses can be passes using this 
 ## Colab Notebook to download directly in Personal GDrive
 
 You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing) with your google account were you want to download the course. Please note that you should open with the same account for which you want to link the drive.
+
+
+
+<br> <br>
+
+## 📚 Installtion & Usage using Dockerfile
+
+    
+* Prerequistes: Docker installed on a linux machine*
+
+* First, you should create a directory and name it kodekloud under the `/home/$USER/kodekloud`
+
+* Copy your cookie and it MUST be named `kodekloud.com_cookies.txt`
+
+* Open a terminal in the directory with dockfile, use `docker build` to build the image like the following:
+
+    `docker build --tag kodekloud-downloader .`  
+
+* Run the container  attached to a volume to extract the courses later with the following command:
+
+    `docker run  --rm --name kodekloud-dl  -it -v /home/$USER/kodekloud:/home/kodekloud kdownload`
+
+
+
+
