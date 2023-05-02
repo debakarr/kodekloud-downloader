@@ -130,6 +130,9 @@ You can also install the latest main changes:
 pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
 
+## Try in Browser
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing)
+
 ## 📚 Usage
 
 After installing the package, you can use the `kodekloud dl` command to download shows from the command line.
