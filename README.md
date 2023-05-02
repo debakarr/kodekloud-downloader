@@ -130,6 +130,8 @@ You can also install the latest main changes:
 pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
 
+## Try in Browser
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing)
 
 ## 📚 Usage
 
@@ -224,7 +226,6 @@ You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43
 
 
 <br> <br>
-
 ## 📚 Installtion & Usage using Dockerfile
 
     
