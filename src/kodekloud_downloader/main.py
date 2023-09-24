@@ -6,7 +6,6 @@ import markdownify
 import requests
 from bs4 import BeautifulSoup
 
-import kodekloud_downloader.yt_dlp_patch  # noqa
 from kodekloud_downloader.helpers import (
     download_all_pdf,
     download_video,
