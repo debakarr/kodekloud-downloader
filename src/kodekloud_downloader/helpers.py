@@ -12,9 +12,6 @@ from kodekloud_downloader.models import Course
 logger = logging.getLogger(__name__)
 
 
-from typing import List
-
-
 def parse_input(input_str: str) -> List[int]:
     """
     Parse the input string and return a list of integers based on the given logic.

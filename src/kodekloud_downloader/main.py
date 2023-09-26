@@ -1,7 +1,8 @@
 import logging
+from collections import defaultdict
+from http.cookiejar import MozillaCookieJar
 from pathlib import Path
 from typing import Union
-from collections import defaultdict
 
 import markdownify
 import requests
@@ -38,7 +39,10 @@ def download_course(
     :param output_dir: The output directory for the downloaded course
     :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
     """
-    page = requests.get(url)
+    cj = MozillaCookieJar(cookie)
+    cj.load(ignore_discard=True, ignore_expires=True)
+
+    page = requests.get(url, cookies=cj)
     soup = BeautifulSoup(page.content, "html.parser")
     course_name_tag = soup.find("h1", class_="course_title") or soup.find(
         "h1", class_="entry-title"
@@ -47,9 +51,11 @@ def download_course(
     main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find(
         "div", class_="ld-lesson-list"
     )
-    topics = main_lesson_content.find_all(
-        "div", class_="w-dyn-item"
-    ) or main_lesson_content.find_all("div", class_="ld-item-list-items")
+    topics = (
+        main_lesson_content.find_all("div", class_="ld-item-list-item")
+        or main_lesson_content.find_all("div", class_="w-dyn-item")
+        or main_lesson_content.find_all("div", class_="ld-item-list-items")
+    )
     items = [Topic.make(topic) for topic in topics]
 
     downloaded_videos = defaultdict(int)
