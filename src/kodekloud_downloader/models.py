@@ -24,7 +24,9 @@ class Topic:
         )
         name = " ".join(title.text.strip().split())
 
-        lessons_urls = topic.find_all("a", class_="ld-topic-row")
+        lessons_urls = topic.find_all("a", class_="ld-topic-row") or topic.find_all(
+            "ld-table-list-item-preview"
+        )
         lessons_names = topic.find_all("span", class_="ld-topic-title")
 
         lessons = []
