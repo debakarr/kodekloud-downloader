@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from typing import Union
+from collections import defaultdict
 
 import markdownify
 import requests
@@ -21,7 +22,13 @@ import yt_dlp  # isort: skip
 logger = logging.getLogger(__name__)
 
 
-def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, Path]) -> None:
+def download_course(
+    url: str,
+    cookie: str,
+    quality: str,
+    output_dir: Union[str, Path],
+    max_duplicate_count: int,
+) -> None:
     """
     Download a course from KodeKloud.
 
@@ -29,31 +36,42 @@ def download_course(url: str, cookie: str, quality: str, output_dir: Union[str, 
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     :param output_dir: The output directory for the downloaded course
+    :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
     """
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    course_name_tag = soup.find("h1", class_="course_title") or soup.find("h1", class_="entry-title")
-    course_name = course_name_tag.text.strip()
-    main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find("div", class_="ld-lesson-list")
-    topics = main_lesson_content.find_all("div", class_="w-dyn-item") or main_lesson_content.find_all(
-        "div", class_="ld-item-list-items"
+    course_name_tag = soup.find("h1", class_="course_title") or soup.find(
+        "h1", class_="entry-title"
     )
+    course_name = course_name_tag.text.strip()
+    main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find(
+        "div", class_="ld-lesson-list"
+    )
+    topics = main_lesson_content.find_all(
+        "div", class_="w-dyn-item"
+    ) or main_lesson_content.find_all("div", class_="ld-item-list-items")
     items = [Topic.make(topic) for topic in topics]
 
-    video_infos = set()
+    downloaded_videos = defaultdict(int)
     for i, item in enumerate(items, start=1):
         for j, lesson in enumerate(item.lessons, start=1):
-            file_path = create_file_path(output_dir, course_name, i, item.name, j, lesson.name)
+            file_path = create_file_path(
+                output_dir, course_name, i, item.name, j, lesson.name
+            )
 
             if lesson.is_video:
-                video_info = get_video_info(lesson.url, cookie=cookie).get("url")
-                if video_info in video_infos:
+                current_video_url = get_video_info(lesson.url, cookie=cookie).get("url")
+                if (
+                    current_video_url in downloaded_videos
+                    and downloaded_videos[current_video_url] > max_duplicate_count
+                ):
                     raise SystemExit(
-                        "Your cookie might have expired or you don't have access to the course."
+                        f"The folowing video is downloaded more than {max_duplicate_count}."
+                        "\nYour cookie might have expired or you don't have access/enrolled to the course."
                         "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
                     )
                 download_video_lesson(lesson, file_path, cookie, quality)
-                video_infos.add(video_info)
+                downloaded_videos[current_video_url] += 1
             else:
                 download_resource_lesson(lesson, file_path, cookie)
 
@@ -107,10 +125,13 @@ def download_video_lesson(lesson, file_path: Path, cookie: str, quality: str) ->
         )
     except yt_dlp.utils.UnsupportedError as ex:
         logger.error(
-            f"Could not download video in link {lesson.url}. " "Please open link manually and verify that video exists!"
+            f"Could not download video in link {lesson.url}. "
+            "Please open link manually and verify that video exists!"
         )
     except yt_dlp.utils.DownloadError as ex:
-        logger.error(f"Access denied while downloading video or audio file from link {lesson.url}")
+        logger.error(
+            f"Access denied while downloading video or audio file from link {lesson.url}"
+        )
 
 
 def download_resource_lesson(lesson, file_path: Path, cookie: str) -> None:
@@ -128,5 +149,7 @@ def download_resource_lesson(lesson, file_path: Path, cookie: str) -> None:
     if content and is_normal_content(content):
         logger.info(f"Writing resource file... {file_path}...")
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.with_suffix(".md").write_text(markdownify.markdownify(content.prettify()), encoding="utf-8")
+        file_path.with_suffix(".md").write_text(
+            markdownify.markdownify(content.prettify()), encoding="utf-8"
+        )
         download_all_pdf(content=content, download_path=file_path.parent, cookie=cookie)

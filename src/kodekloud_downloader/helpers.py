@@ -57,7 +57,9 @@ def select_courses(courses: List[Course]) -> List[Course]:
     table.field_names = ["No.", "Name", "Type", "Categories"]
 
     for i, course in enumerate(courses):
-        table.add_row([i + 1, course.name, course.course_type, ", ".join(course.categories)])
+        table.add_row(
+            [i + 1, course.name, course.course_type, ", ".join(course.categories)]
+        )
 
     table.align["No."] = "l"
     table.align["Name"] = "l"
@@ -68,7 +70,9 @@ def select_courses(courses: List[Course]) -> List[Course]:
 
     user_selected_courses = []
     selected_courses = parse_input(
-        input("Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): ")
+        input(
+            "Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): "
+        )
     )
     for selected_course in selected_courses:
         user_selected_courses.append(courses[int(selected_course) - 1])

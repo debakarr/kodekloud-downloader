@@ -14,7 +14,9 @@ from kodekloud_downloader.models import get_all_course
 @click.group()
 @click.option("-v", "--verbose", count=True, help="Increase log level verbosity")
 def kodekloud(verbose):
-    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+    )
     if verbose == 1:
         logging.getLogger().setLevel(logging.INFO)
     elif verbose >= 2:
@@ -42,7 +44,20 @@ def kodekloud(verbose):
     required=True,
     help="Cookie file. Course should be accessible via this.",
 )
-def dl(course_url, quality: str, output_dir: Union[Path, str], cookie):
+@click.option(
+    "--max-duplicate-count",
+    "-mdc",
+    default=3,
+    type=int,
+    help="If same video is downloaded this many times, then download stops",
+)
+def dl(
+    course_url,
+    quality: str,
+    output_dir: Union[Path, str],
+    cookie,
+    max_duplicate_count: int,
+):
     if course_url is None:
         courses = get_all_course()
         selected_courses = select_courses(courses)
@@ -52,9 +67,16 @@ def dl(course_url, quality: str, output_dir: Union[Path, str], cookie):
                 cookie=cookie,
                 quality=quality,
                 output_dir=output_dir,
+                max_duplicate_count=max_duplicate_count,
             )
     elif validators.url(course_url):
-        download_course(url=course_url, cookie=cookie, quality=quality, output_dir=output_dir)
+        download_course(
+            url=course_url,
+            cookie=cookie,
+            quality=quality,
+            output_dir=output_dir,
+            max_duplicate_count=max_duplicate_count,
+        )
     else:
         logging.error("Please enter a valid URL")
         SystemExit(1)
