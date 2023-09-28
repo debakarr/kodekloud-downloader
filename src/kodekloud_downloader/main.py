@@ -6,6 +6,7 @@ from typing import Union
 
 import markdownify
 import requests
+import yt_dlp
 from bs4 import BeautifulSoup
 
 from kodekloud_downloader.helpers import (
@@ -15,12 +16,59 @@ from kodekloud_downloader.helpers import (
     is_normal_content,
     normalize_name,
 )
-from kodekloud_downloader.models import Topic
-
-import yt_dlp  # isort: skip
-
+from kodekloud_downloader.models import Quiz, Topic
 
 logger = logging.getLogger(__name__)
+
+
+def download_quiz(output_dir: str, sep: bool):
+    quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
+    response = requests.get("https://mcq-backend-main.kodekloud.com/quizzes")
+    response.raise_for_status()
+
+    quizzes = [Quiz(**item) for item in response.json()]
+    print(f"Total {len(quizzes)} quiz available!")
+    for quiz_index, quiz in enumerate(quizzes, start=1):
+        quiz_name = quiz.name or quiz.topic
+        quiz_markdown.append(f"\n## {quiz_name}")
+        print(f"Fetching Quiz {quiz_index} - {quiz_name}")
+        questions = quiz.fetch_questions()
+
+        for index, question in enumerate(questions, start=1):
+            quiz_markdown.append(f"\n**{index}. {question.question.strip()}**")
+            quiz_markdown.append("\n")
+            for answer in question.answers:
+                quiz_markdown.append(f"* [ ] {answer}")
+            quiz_markdown.append(f"\n**Correct answer:**")
+            for answer in question.correctAnswers:
+                quiz_markdown.append(f"* [x] {answer}")
+
+            if script := question.code.get("script"):
+                quiz_markdown.append(f"\n**Code**: \n{script}")
+            if question.explanation:
+                quiz_markdown.append(f"\n**Explaination**: {question.explanation}")
+            if question.documentationLink:
+                quiz_markdown.append(
+                    f"\n**Documentation Link**: {question.documentationLink}"
+                )
+
+        if sep and quiz_name:
+            output_file = Path(output_dir) / f"{quiz_name.replace('/', '')}.md"
+            markdown_text = "\n".join(quiz_markdown)
+
+            Path(output_file).write_text(markdown_text)
+            print(f"Quiz file written in {output_file}")
+
+            quiz_markdown = []
+        else:
+            quiz_markdown.append("\n---\n")
+
+    if not sep:
+        output_file = Path(output_dir) / "KodeKloud_Quiz.md"
+        markdown_text = "\n".join(quiz_markdown)
+
+        Path(output_file).write_text(markdown_text)
+        print(f"Quiz file written in {output_file}")
 
 
 def download_course(

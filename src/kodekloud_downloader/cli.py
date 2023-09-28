@@ -7,7 +7,7 @@ import validators
 
 from kodekloud_downloader.enums import Quality
 from kodekloud_downloader.helpers import select_courses
-from kodekloud_downloader.main import download_course
+from kodekloud_downloader.main import download_course, download_quiz
 from kodekloud_downloader.models import get_all_course
 
 
@@ -80,6 +80,25 @@ def dl(
     else:
         logging.error("Please enter a valid URL")
         SystemExit(1)
+
+
+@kodekloud.command()
+@click.option(
+    "--output-dir",
+    "-o",
+    default=Path.home() / "Downloads",
+    help="Output directory where quiz markdown file will be saved.",
+)
+@click.option(
+    "--sep",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Write in seperate markdown files.",
+)
+def dl_quiz(output_dir: Union[Path, str], sep: bool):
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    download_quiz(output_dir, sep)
 
 
 if __name__ == "__main__":
