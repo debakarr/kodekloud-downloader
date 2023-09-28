@@ -89,10 +89,16 @@ def dl(
     default=Path.home() / "Downloads",
     help="Output directory where quiz markdown file will be saved.",
 )
-def dl_quiz(output_dir: Union[Path, str]):
+@click.option(
+    "--sep",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Write in seperate markdown files.",
+)
+def dl_quiz(output_dir: Union[Path, str], sep: bool):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    output_file = Path(output_dir) / "KodeKloud_Quiz.md"
-    download_quiz(output_file)
+    download_quiz(output_dir, sep)
 
 
 if __name__ == "__main__":

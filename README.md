@@ -228,12 +228,19 @@ Usage: kodekloud dl-quiz [OPTIONS]
 Options:
   -o, --output-dir TEXT  Output directory where quiz markdown file will be
                          saved.
+  --sep                  Write in seperate markdown files.
   --help                 Show this message and exit.
 ```
 
 Here is an example:
 
-`kodekloud dl-quiz -o .`
+`kodekloud dl-quiz -o KodeKloudQuiz`
+
+or download seperate markdown file.
+
+`kodekloud dl-quiz -o KodeKloudQuiz --sep`
+
+To convert the quiz markdown to PDF you can use any online PDF converter like [aconvert](https://www.aconvert.com/pdf/md-to-pdf/), or [md2pdf](https://md2pdf.netlify.app/). You can also use [`grip`](https://github.com/joeyespo/grip). Or you can also create a [GitHub Gist](https://gist.github.com/) and then use your browser to convert the page into PDF.
 
 ## Colab Notebook to download directly in Personal GDrive
 
