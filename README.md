@@ -219,6 +219,22 @@ Enter the courses you want to select (Multiple courses can be passes using this 
 
 ![](static/demo-select-download.gif)
 
+You can also use `kodekloud dl-quiz` to download all quiz in a markdown file.
+
+```css
+kodekloud dl-quiz --help
+Usage: kodekloud dl-quiz [OPTIONS]
+
+Options:
+  -o, --output-dir TEXT  Output directory where quiz markdown file will be
+                         saved.
+  --help                 Show this message and exit.
+```
+
+Here is an example:
+
+`kodekloud dl-quiz -o .`
+
 ## Colab Notebook to download directly in Personal GDrive
 
 You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing) with your google account were you want to download the course. Please note that you should open with the same account for which you want to link the drive.
