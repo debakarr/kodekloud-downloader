@@ -56,7 +56,8 @@ def download_quiz(output_dir: str, sep: bool):
             output_file = Path(output_dir) / f"{quiz_name.replace('/', '')}.md"
             markdown_text = "\n".join(quiz_markdown)
 
-            Path(output_file).write_text(markdown_text)
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(markdown_text)
             print(f"Quiz file written in {output_file}")
 
             quiz_markdown = []
