@@ -108,7 +108,7 @@ class Quiz:
             params = {
                 "id": question_id,
             }
-            url = "https://mcq-backend-main.kodekloud.com/questions"
+            url = "https://mcq-backend-main.kodekloud.com/api/questions/question"
             response = requests.get(url, params=params)
             response.raise_for_status()
             if question_json := response.json():

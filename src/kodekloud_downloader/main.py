@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def download_quiz(output_dir: str, sep: bool):
     quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
-    response = requests.get("https://mcq-backend-main.kodekloud.com/quizzes")
+    response = requests.get("https://mcq-backend-main.kodekloud.com/api/quizzes/all")
     response.raise_for_status()
 
     quizzes = [Quiz(**item) for item in response.json()]
