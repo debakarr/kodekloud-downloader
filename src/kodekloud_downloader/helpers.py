@@ -1,13 +1,14 @@
 import logging
+import re
 import string
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import prettytable
 import requests
 import yt_dlp
 
-from kodekloud_downloader.models import Course
+from kodekloud_downloader.models.courses import Course
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,12 @@ def select_courses(courses: List[Course]) -> List[Course]:
 
     for i, course in enumerate(courses):
         table.add_row(
-            [i + 1, course.name, course.course_type, ", ".join(course.categories)]
+            [
+                i + 1,
+                course.title,
+                course.plan,
+                ", ".join([category.name for category in course.categories]),
+            ]
         )
 
     table.align["No."] = "l"
@@ -96,6 +102,9 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     """
+    headers = {
+        "Referer": "https://learn.kodekloud.com/",
+    }
     ydl_opts = {
         "format": f"bestvideo[height<={quality[:-1]}]+bestaudio/best[height<={quality[:-1]}]/best",
         "concurrent_fragment_downloads": 15,
@@ -105,6 +114,7 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         "merge_output_format": "mkv",
         "writesubtitles": True,
         "no_write_sub": True,
+        "http_headers": headers,
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -140,17 +150,26 @@ def download_all_pdf(content, download_path: Path, cookie: str) -> None:
             file_name.write_bytes(response.content)
 
 
-def get_video_info(url: str, cookie: str):
-    ydl_opts = {
-        "skip_download": True,
-        "print_json": True,
-        "quiet": True,
-        "extract_flat": True,
-        "simulate": True,
-        "no_warnings": True,
-        "cookiefile": cookie,
-    }
+def parse_token(cookiefile: str) -> Optional[str]:
+    """
+    Parse the session cookie from a file containing cookies.
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return info
+    :param cookiefile: The path to the file containing cookies.
+    :return: The value of the 'session-cookie' if found, otherwise None.
+    :raises FileNotFoundError: If the cookie file does not exist.
+    :raises IOError: If there is an error reading the file.
+    """
+    cookies = {}
+    try:
+        with open(cookiefile, "r") as fp:
+            for line in fp:
+                if line.strip() and not re.match(r"^\#", line):
+                    line_fields = line.strip().split("\t")
+                    if len(line_fields) > 6:
+                        cookies[line_fields[5]] = line_fields[6]
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file {cookiefile} does not exist.")
+    except IOError as e:
+        raise IOError(f"Error reading the file {cookiefile}: {e}")
+
+    return cookies.get("session-cookie")

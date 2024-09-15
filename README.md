@@ -156,64 +156,113 @@ Here is an example:
 
 ```css
 kodekloud dl -o . -c /path/to/cookie.txt
-+-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
-| No. | Name                                                                        | Type    | Categories                                                 |
-+-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
-| 1   | Ultimate Certified Kubernetes Application Developer (CKAD) Mock Exam Series | Premium | Challenges, Containers, Kubernetes                         |
-| 2   | GCP DevOps Project                                                          | Premium | Cloud, GCP                                                 |
-| 3   | 12 Factor App                                                               | Premium | Productivity                                               |
-| 4   | AZ-305: Microsoft Azure Solutions Architect Expert                          | Premium | Certification, Cloud, Devops                               |
-| 5   | Ultimate Certified Kubernetes Administrator (CKA) Mock Exam Series          | Free    | Container Orchestration, Kubernetes, Devops, Certification |
-| 6   | AWS Lambda                                                                  | Premium | AWS, Cloud                                                 |
-| 7   | Linux Professional Institute LPIC-1 Exam 101                                | Premium | Certification, Linux                                       |
-| 8   | Advanced Golang                                                             | Premium | Programming                                                |
-| 9   | Prometheus Certified Associate (PCA)                                        | Premium | Certification, Kubernetes, Monitoring                      |
-| 10  | GCP Cloud Digital Leader Certification                                      | Premium | Cloud, GCP, Certification                                  |
-| 11  | OpenShift 4                                                                 | Premium | Container Orchestration, Devops, Red Hat                   |
-| 12  | HashiCorp : Terraform Cloud                                                 | Premium | Cloud, Devops, HashiCorp                                   |
-| 13  | ArgoCD                                                                      | Premium | CI/CD, Devops, Kubernetes                                  |
-| 14  | Amazon Elastic Container Service (AWS ECS)                                  | Free    | AWS, Devops                                                |
-| 15  | Red Hat Certified System Administrator(RHCSA)                               | Premium | Devops, Linux, Red Hat, Certification                      |
-| 16  | Open Source for Beginners                                                   | Premium | Productivity                                               |
-| 17  | Kustomize                                                                   | Premium | Devops, Kubernetes                                         |
-| 18  | DevSecOps – Kubernetes DevOps & Security                                    | Premium | Devops, DevSecOps, Kubernetes                              |
-| 19  | AZ-104: Microsoft Azure Administrator                                       | Premium | Cloud, Devops, Certification                               |
-| 20  | DevOps Interview Preparation Course                                         | Premium | Devops                                                     |
-| 21  | Terraform Challenges                                                        | Free    | Challenges, Devops, IAC                                    |
-| 22  | HashiCorp Certified: Consul Associate Certification                         | Premium | Devops, HashiCorp                                          |
-| 23  | HashiCorp Certified: Vault Associate Certification                          | Premium | Devops, HashiCorp                                          |
-| 24  | Kubernetes Challenges                                                       | Free    | Challenges, Devops                                         |
-| 25  | Linux Challenges                                                            | Free    | Challenges, Devops, Linux                                  |
-| 26  | HashiCorp Certified: Vault Operations Professional 2022                     | Premium | Container Orchestration, Containers, Devops, HashiCorp     |
-| 27  | CKS – Challenges                                                            | Free    | Challenges, Container Orchestration, Containers, Devops    |
-| 28  | Linux Foundation Certified System Administrator (LFCS)                      | Premium | Devops, Linux, Certification                               |
-| 29  | Jenkins                                                                     | Premium | Automation, CI/CD, Devops                                  |
-| 30  | Golang                                                                      | Premium | Devops, Programming                                        |
-| 31  | Terraform Associate Certification: HashiCorp Certified                      | Premium | Container Orchestration, Devops, IAC, Certification        |
-| 32  | Helm for Beginners                                                          | Premium | Container Orchestration, Containers, Devops                |
-| 33  | PCAP – Python Certification Course                                          | Premium | Devops, Programming, Python, Certification                 |
-| 34  | Istio Service Mesh                                                          | Premium | Devops                                                     |
-| 35  | Jinja2 Basics (Mini Course)                                                 | Free    | Devops                                                     |
-| 36  | Certified Kubernetes Security Specialist (CKS)                              | Premium | Container Orchestration, Kubernetes, Devops, Certification |
-| 37  | Certified Python Entry-Level Programmer: PCEP-30-02                         | Premium | Devops, Programming, Python, Certification                 |
-| 38  | JSON Path Test – Free Course                                                | Free    | Devops                                                     |
-| 39  | Docker Certified Associate Exam Course                                      | Premium | Containers, Devops, Certification                          |
-| 40  | Terraform Basics Training Course                                            | Premium | Automation, Devops, IAC                                    |
-| 41  | CKA Certification Course – Certified Kubernetes Administrator               | Premium | Container Orchestration, Containers, Devops                |
-| 42  | Certified Kubernetes Application Developer (CKAD)                           | Premium | Container Orchestration, Kubernetes, Devops, Certification |
-| 43  | Kubernetes for the Absolute Beginners – Hands-on Tutorial                   | Premium | Container Orchestration, Containers, Kubernetes, Devops    |
-| 44  | Docker Training Course for the Absolute Beginner                            | Premium | Containers, Devops                                         |
-| 45  | Chef for the Absolute Beginners                                             | Premium | Automation, Devops                                         |
-| 46  | OpenShift 3 for the Absolute Beginners                                      | Premium | Container Orchestration, Containers, Devops                |
-| 47  | Ansible Advanced Course                                                     | Premium | Automation, Devops, IAC                                    |
-| 48  | Learn Ansible Basics – Beginners Course                                     | Premium | Automation, Devops, IAC                                    |
-| 49  | Docker – SWARM | SERVICES | STACKS – Hands-on                               | Premium | Containers, Devops                                         |
-| 50  | DevOps Pre-Requisite Course                                                 | Premium | Automation, Devops, IAC                                    |
-| 51  | Learning Linux Basics Course & Labs                                         | Premium | Devops, Linux                                              |
-| 52  | Shell Scripts for Beginners                                                 | Premium | Devops                                                     |
-| 53  | Puppet for the Absolute Beginners Course                                    | Premium | Automation, Devops, IAC                                    |
-| 54  | GIT for Beginners                                                           | Premium | Devops, Programming                                        |
-+-----+-----------------------------------------------------------------------------+---------+------------------------------------------------------------+
++-----+--------------------------------------------------------------------------------------+----------+------------------------------------------------------------------------------------------+
+| No. | Name                                                                                 | Type     | Categories                                                                               |
++-----+--------------------------------------------------------------------------------------+----------+------------------------------------------------------------------------------------------+
+| 1   | Kubernetes Administration: Package Management with Glasskube                         | Standard | Kubernetes                                                                               |
+| 2   | Linux System Administration for Beginners                                            | Standard |                                                                                          |
+| 3   | GKE - Google Kubernetes Engine                                                       | Standard | Cloud, Containers, DevOps, Kubernetes, Container Orchestration, GCP                      |
+| 4   | DevOps Interview Preparation Course                                                  | Standard | DevOps                                                                                   |
+| 5   | Kustomize                                                                            | Standard | DevOps, Kubernetes                                                                       |
+| 6   | AWS Lambda                                                                           | Pro      | AWS, Cloud                                                                               |
+| 7   | AWS Solutions Architect Associate Certification                                      | Pro      | AWS, Certification, Cloud                                                                |
+| 8   | Amazon Elastic Compute Cloud (EC2)                                                   | Pro      | AWS, Cloud, DevOps, Infrastructure as Code (IaC)                                         |
+| 9   | Learn By Doing: HashiCorp Nomad                                                      | Standard | HashiCorp                                                                                |
+| 10  | GIT for Beginners                                                                    | Standard | DevOps, Programming                                                                      |
+| 11  | Spacelift: Elevate Your Infrastructure Deployment                                    | Standard | DevOps, Infrastructure as Code (IaC)                                                     |
+| 12  | Introduction to Sealed Secrets in Kubernetes                                         | Standard | Kubernetes                                                                               |
+| 13  | Learn by Doing - Prompt Engineering 101                                              | Free     |                                                                                          |
+| 14  | Prometheus Certified Associate (PCA)                                                 | Standard | Certification, DevOps, Kubernetes, Monitoring                                            |
+| 15  | Learning Linux Basics Course & Labs                                                  | Standard | Linux, DevOps                                                                            |
+| 16  | Helm for Beginners                                                                   | Standard | DevOps, Kubernetes, Container Orchestration, Containers                                  |
+| 17  | Exploring WebAssembly (WASM)                                                         | Standard | DevOps, Cloud                                                                            |
+| 18  | Docker Certified Associate Exam Course                                               | Standard | Certification, Containers, DevOps                                                        |
+| 19  | HashiCorp Packer                                                                     | Standard | DevOps, HashiCorp                                                                        |
+| 20  | Learn By Doing: AWS Workshop with Terraform                                          | Standard | AWS, Infrastructure as Code (IaC)                                                        |
+| 21  | Kubernetes and Cloud-Native Associate (KCNA)                                         | Standard | Certification, Containers, Kubernetes, Container Orchestration                           |
+| 22  | DP-900: Microsoft Azure Data Fundamentals                                            | Standard | Certification, Cloud                                                                     |
+| 23  | Learn Ansible Basics - Beginners Course                                              | Standard | Automation, DevOps, Infrastructure as Code (IaC)                                         |
+| 24  | Ultimate Certified Kubernetes Administrator (CKA) Mock Exam Series                   | Standard | Challenges, Containers, Kubernetes                                                       |
+| 25  | 12 Factor App                                                                        | Standard |                                                                                          |
+| 26  | Docker - SWARM | SERVICES | STACKS - Hands-on                                        | Standard | Containers, DevOps                                                                       |
+| 27  | Fundamentals of DevOps                                                               | Standard | DevOps                                                                                   |
+| 28  | Kubernetes Networking Deep Dive                                                      | Standard | Kubernetes                                                                               |
+| 29  | Terraform Basics Training Course                                                     | Standard | Automation, DevOps, Infrastructure as Code (IaC)                                         |
+| 30  | CKA Certification Course - Certified Kubernetes Administrator                        | Standard | Containers, Certification, Container Orchestration, DevOps, Kubernetes                   |
+| 31  | Chaos Engineering                                                                    | Standard | AWS                                                                                      |
+| 32  | Mastering Generative AI with OpenAI                                                  | Standard | Programming                                                                              |
+| 33  | Kubernetes Challenges                                                                | Free     | Containers, DevOps, Kubernetes                                                           |
+| 34  | HashiCorp Certified: Vault Associate Certification                                   | Standard | Certification, DevOps, HashiCorp                                                         |
+| 35  | OpenTofu: A Beginners Guide to a Terraform Fork Including Migration From Terraform   | Standard | DevOps, Infrastructure as Code (IaC)                                                     |
+| 36  | Ultimate Certified Kubernetes Application Developer (CKAD) Mock Exam Series          | Standard | Challenges, Containers, Kubernetes                                                       |
+| 37  | Learn By Doing: Deploying and Managing the EFK Stack on Kubernetes                   | Standard | DevOps, Kubernetes                                                                       |
+| 38  | Grafana Loki                                                                         | Standard | DevOps, Kubernetes, Monitoring                                                           |
+| 39  | Linode : Kubernetes Engine                                                           | Free     | Containers, Kubernetes                                                                   |
+| 40  | Microsoft Azure Security Technologies (AZ-500)                                       | Standard | Certification, Cloud, Security                                                           |
+| 41  | Learn-By-Doing Kubernetes Network Policies                                           | Standard | Challenges, Containers, Kubernetes, Container Orchestration                              |
+| 42  | Kubernetes for the Absolute Beginners - Hands-on Tutorial                            | Standard | Containers, DevOps, Kubernetes, Container Orchestration                                  |
+| 43  | HashiCorp : Terraform Cloud                                                          | Standard | Cloud, DevOps, HashiCorp                                                                 |
+| 44  | AWS RDS                                                                              | Pro      | AWS, Cloud                                                                               |
+| 45  | AWS Networking Fundamentals                                                          | Pro      | AWS                                                                                      |
+| 46  | Istio Service Mesh                                                                   | Standard | DevOps, Kubernetes                                                                       |
+| 47  | Learn By Doing: Kubernetes Policies with Kyverno                                     | Standard | DevOps, Kubernetes                                                                       |
+| 48  | Docker Training Course for the Absolute Beginner                                     | Free     | DevOps, Containers                                                                       |
+| 49  | GitLab CI/CD: Architecting, Deploying, and Optimizing Pipelines                      | Standard | CI/CD                                                                                    |
+| 50  | AWS Cloud Practitioner (CLF-C02)                                                     | Standard | AWS, Cloud, DevOps                                                                       |
+| 51  | GitHub Actions                                                                       | Standard | Automation                                                                               |
+| 52  | OpenShift 3 for the Absolute Beginners                                               | Standard | Container Orchestration, Containers, DevOps                                              |
+| 53  | Linux Foundation Certified System Administrator (LFCS)                               | Standard | DevOps, Linux, Certification                                                             |
+| 54  | DevOps Pre-Requisite Course                                                          | Standard | DevOps                                                                                   |
+| 55  | Linux Challenges                                                                     | Free     | DevOps, Linux                                                                            |
+| 56  | GitOps with FluxCD                                                                   | Standard | CI/CD, DevOps, Kubernetes                                                                |
+| 57  | Amazon Simple Storage Service (Amazon S3)                                            | Pro      | AWS, Cloud                                                                               |
+| 58  | Postman Essentials                                                                   | Standard | DevOps                                                                                   |
+| 59  | GCP DevOps Project                                                                   | Standard | Cloud, GCP                                                                               |
+| 60  | Lens - Kubernetes IDE                                                                | Free     | Kubernetes                                                                               |
+| 61  | Python Basics                                                                        | Standard | Certification, DevOps, Programming, Python                                               |
+| 62  | [Updated] AZ-104: Microsoft Azure Administrator                                      | Standard | Certification, DevOps, Cloud                                                             |
+| 63  | Hands-On AWS Project: Deploy Your First Crypto App                                   | Pro      | AWS                                                                                      |
+| 64  | Shell Scripts for Beginners                                                          | Standard | Challenges, DevOps                                                                       |
+| 65  | CKS - Challenges                                                                     | Free     | Challenges, Containers, Container Orchestration, DevOps                                  |
+| 66  | DevSecOps - Kubernetes DevOps & Security                                             | Standard | DevOps, DevSecOps, Kubernetes                                                            |
+| 67  | OpenShift 4                                                                          | Standard | Container Orchestration, DevOps, Red Hat                                                 |
+| 68  | AWS - IAM                                                                            | Pro      | AWS, Cloud                                                                               |
+| 69  | HashiCorp Certified: Consul Associate Certification                                  | Standard | Certification, DevOps, HashiCorp                                                         |
+| 70  | Jinja2 Basics (Mini Course)                                                          | Free     | DevOps                                                                                   |
+| 71  | Open Source for Beginners                                                            | Standard |                                                                                          |
+| 72  | GitOps with ArgoCD                                                                   | Standard | DevOps, Kubernetes, CI/CD                                                                |
+| 73  | EFK Stack: Enterprise-Grade Logging and Monitoring                                   | Standard | Certification                                                                            |
+| 74  | AWS CloudWatch                                                                       | Pro      | AWS, Cloud, Monitoring                                                                   |
+| 75  | Linux Professional Institute LPIC-1 Exam 101                                         | Standard | Certification, Linux                                                                     |
+| 76  | Terraform Associate Certification: HashiCorp Certified                               | Standard | Certification, Container Orchestration, Containers, DevOps, Infrastructure as Code (IaC) |
+| 77  | GCP Cloud Digital Leader Certification                                               | Standard | Certification, Cloud, GCP                                                                |
+| 78  | AZ900: Microsoft Azure Fundamentals                                                  | Standard | Certification, Cloud                                                                     |
+| 79  | Learn By Doing - MariaDB                                                             | Standard |                                                                                          |
+| 80  | Amazon Elastic Container Service (AWS ECS)                                           | Free     | AWS, Cloud, DevOps                                                                       |
+| 81  | Golang                                                                               | Standard | DevOps, Programming                                                                      |
+| 82  | AWS EKS                                                                              | Pro      | AWS, Cloud                                                                               |
+| 83  | GitHub Actions Certification                                                         | Standard | Automation                                                                               |
+| 84  | Enhancing Soft Skills for DevOps Engineers: Essential Non-Technical Skills to Thrive | Standard | DevOps                                                                                   |
+| 85  | JSON Path Test - Free Course                                                         | Free     | DevOps                                                                                   |
+| 86  | Terragrunt for Beginners                                                             | Standard | DevOps, Infrastructure as Code (IaC)                                                     |
+| 87  | Introduction to K8sGPT and AI-Driven Kubernetes Engineering                          | Standard | DevOps, Kubernetes                                                                       |
+| 88  | HashiCorp Certified: Vault Operations Professional 2022                              | Standard | Certification, DevOps, HashiCorp, Container Orchestration, Containers                    |
+| 89  | AWS CodePipeline (CI/CD Pipeline)                                                    | Pro      | AWS, Cloud, DevOps                                                                       |
+| 90  | LangChain                                                                            | Standard | Programming                                                                              |
+| 91  | Ansible Advanced Course                                                              | Standard | Automation, DevOps, Infrastructure as Code (IaC)                                         |
+| 92  | Certified Kubernetes Security Specialist (CKS)                                       | Standard | Containers, DevOps, Kubernetes, Certification, Container Orchestration                   |
+| 93  | Pulumi Essentials                                                                    | Standard | DevOps, Infrastructure as Code (IaC)                                                     |
+| 94  | Certified Kubernetes Application Developer (CKAD)                                    | Standard | Containers, DevOps, Kubernetes, Certification, Container Orchestration                   |
+| 95  | Jenkins                                                                              | Standard | CI/CD, DevOps, Automation                                                                |
+| 96  | Advanced Bash Scripting                                                              | Standard | Linux                                                                                    |
+| 97  | PCAP - Python Certification Course                                                   | Standard | Certification, DevOps, Programming, Python                                               |
+| 98  | Advanced Golang                                                                      | Standard | Programming                                                                              |
+| 99  | Azure Kubernetes Service                                                             | Standard | Cloud, DevOps, Kubernetes                                                                |
+| 100 | AZ-305: Microsoft Azure Solutions Architect Expert                                   | Standard | Certification, Cloud, DevOps                                                             |
+| 101 | Terraform Challenges                                                                 | Free     | Containers, DevOps, Infrastructure as Code (IaC)                                         |
+| 102 | CKA Certification Course - Certified Kubernetes Administrator                        | Standard | Containers, Certification, Container Orchestration, DevOps, Kubernetes                   |
+| 103 | AWS Certified Developer - Associate                                                  | Pro      | AWS, Certification, Cloud                                                                |
++-----+--------------------------------------------------------------------------------------+----------+------------------------------------------------------------------------------------------+
 Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): 1-3,7-9,10,13,55
 ```
 
@@ -247,3 +296,19 @@ To convert the quiz markdown to PDF you can use any online PDF converter like [a
 ## Colab Notebook to download directly in Personal GDrive
 
 You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing) with your google account were you want to download the course. Please note that you should open with the same account for which you want to link the drive.
+
+## Troubleshoot
+
+If you are getting the below message while downloading course, make sure you have the proper plan.
+
+```console
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url
+```
+
+---
+
+If you are getting the below message while downloading course, make sure you regenerate your cookie.
+
+```console
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url
+```
