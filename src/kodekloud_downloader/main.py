@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from http.cookiejar import MozillaCookieJar
 from pathlib import Path
+import re
 from typing import Union
 
 import markdownify
@@ -16,7 +17,9 @@ from kodekloud_downloader.helpers import (
     is_normal_content,
     normalize_name,
 )
-from kodekloud_downloader.models import Quiz, Topic
+from kodekloud_downloader.models.courses import Course
+from kodekloud_downloader.models.helper import fetch_course_detail
+from kodekloud_downloader.models2 import Quiz, Topic
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +59,7 @@ def download_quiz(output_dir: str, sep: bool):
             output_file = Path(output_dir) / f"{quiz_name.replace('/', '')}.md"
             markdown_text = "\n".join(quiz_markdown)
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(markdown_text)
             print(f"Quiz file written in {output_file}")
 
@@ -72,8 +75,21 @@ def download_quiz(output_dir: str, sep: bool):
         print(f"Quiz file written in {output_file}")
 
 
+def parseToken(cookiefile):
+    """Parse a cookies.txt file and return a dictionary of key value pairs
+    compatible with requests."""
+
+    cookies = {}
+    with open(cookiefile, "r") as fp:
+        for line in fp:
+            if line.strip() and not re.match(r"^\#", line):
+                lineFields = line.strip().split("\t")
+                cookies[lineFields[5]] = lineFields[6]
+    return cookies.get("session-cookie")
+
+
 def download_course(
-    url: str,
+    course: Course,
     cookie: str,
     quality: str,
     output_dir: Union[str, Path],
@@ -88,34 +104,37 @@ def download_course(
     :param output_dir: The output directory for the downloaded course
     :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
     """
+    session = requests.Session()
     cj = MozillaCookieJar(cookie)
     cj.load(ignore_discard=True, ignore_expires=True)
+    session_token = parseToken(cookie)
+    headers = {"authorization": f"bearer {session_token}"}
+    params = {
+        "course_id": course.id,
+    }
 
-    page = requests.get(url, cookies=cj)
-    soup = BeautifulSoup(page.content, "html.parser")
-    course_name_tag = soup.find("h1", class_="course_title") or soup.find(
-        "h1", class_="entry-title"
-    )
-    course_name = course_name_tag.text.strip()
-    main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find(
-        "div", class_="ld-lesson-list"
-    )
-    topics = (
-        main_lesson_content.find_all("div", class_="ld-item-list-item")
-        or main_lesson_content.find_all("div", class_="w-dyn-item")
-        or main_lesson_content.find_all("div", class_="ld-item-list-items")
-    )
-    items = [Topic.make(topic) for topic in topics]
+    course_detail = fetch_course_detail(course.slug)
 
     downloaded_videos = defaultdict(int)
-    for i, item in enumerate(items, start=1):
-        for j, lesson in enumerate(item.lessons, start=1):
+    for module_index, module in enumerate(course_detail.modules, start=1):
+        for lesson_index, lesson in enumerate(module.lessons, start=1):
             file_path = create_file_path(
-                output_dir, course_name, i, item.name, j, lesson.name
+                output_dir,
+                course.title,
+                module_index,
+                module.title,
+                lesson_index,
+                lesson.title,
             )
 
-            if lesson.is_video:
-                current_video_url = get_video_info(lesson.url, cookie=cookie).get("url")
+            if lesson.type == "video":
+                url = f"https://learn-api.kodekloud.com/api/lessons/{lesson.id}"
+
+                response = session.get(url, headers=headers, params=params)
+                response.raise_for_status()
+                lesson_url = response.json()["video_url"]
+                breakpoint()
+                current_video_url = get_video_info(lesson_url, cookie=cookie).get("url")
                 if (
                     current_video_url in downloaded_videos
                     and downloaded_videos[current_video_url] > max_duplicate_count
@@ -134,9 +153,9 @@ def download_course(
 def create_file_path(
     output_dir: Union[str, Path],
     course_name: str,
-    i: int,
-    item_name: str,
-    j: int,
+    module_index: int,
+    module_name: str,
+    lesson_index: int,
     lesson_name: str,
 ) -> Path:
     """
@@ -144,9 +163,9 @@ def create_file_path(
 
     :param output_dir: The output directory for the downloaded course
     :param course_name: The course name
-    :param i: The topic index
-    :param item_name: The topic name
-    :param j: The lesson index
+    :param module_index: The module index
+    :param item_name: The module name
+    :param lesson_index: The lesson index
     :param lesson_name: The lesson name
     :return: The created file path
     """
@@ -154,8 +173,8 @@ def create_file_path(
         Path(output_dir)
         / "KodeKloud"
         / normalize_name(course_name)
-        / f"{i} - {normalize_name(item_name)}"
-        / f"{j} - {normalize_name(lesson_name)}"
+        / f"{module_index} - {normalize_name(module_name)}"
+        / f"{lesson_index} - {normalize_name(lesson_name)}"
     )
 
 

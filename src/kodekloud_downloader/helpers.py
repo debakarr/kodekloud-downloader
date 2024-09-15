@@ -7,7 +7,7 @@ import prettytable
 import requests
 import yt_dlp
 
-from kodekloud_downloader.models import Course
+from kodekloud_downloader.models.courses import Course
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,12 @@ def select_courses(courses: List[Course]) -> List[Course]:
 
     for i, course in enumerate(courses):
         table.add_row(
-            [i + 1, course.name, course.course_type, ", ".join(course.categories)]
+            [
+                i + 1,
+                course.title,
+                course.plan,
+                ", ".join([category.name for category in course.categories]),
+            ]
         )
 
     table.align["No."] = "l"

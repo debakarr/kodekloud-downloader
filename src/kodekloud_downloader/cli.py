@@ -8,7 +8,8 @@ import validators
 from kodekloud_downloader.enums import Quality
 from kodekloud_downloader.helpers import select_courses
 from kodekloud_downloader.main import download_course, download_quiz
-from kodekloud_downloader.models import get_all_course
+from kodekloud_downloader.models2 import get_all_course
+from kodekloud_downloader.models.helper import collect_all_courses
 
 
 @click.group()
@@ -59,11 +60,11 @@ def dl(
     max_duplicate_count: int,
 ):
     if course_url is None:
-        courses = get_all_course()
+        courses = collect_all_courses()
         selected_courses = select_courses(courses)
         for selected_course in selected_courses:
             download_course(
-                url=selected_course.link,
+                course=selected_course,
                 cookie=cookie,
                 quality=quality,
                 output_dir=output_dir,
