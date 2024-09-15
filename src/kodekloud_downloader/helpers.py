@@ -101,6 +101,9 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     """
+    headers = {
+    'Referer': 'https://learn.kodekloud.com/',
+    }
     ydl_opts = {
         "format": f"bestvideo[height<={quality[:-1]}]+bestaudio/best[height<={quality[:-1]}]/best",
         "concurrent_fragment_downloads": 15,
@@ -110,6 +113,7 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         "merge_output_format": "mkv",
         "writesubtitles": True,
         "no_write_sub": True,
+        'http_headers': headers,
     }
     logger.debug(f"Calling download with following options: {ydl_opts}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -146,6 +150,9 @@ def download_all_pdf(content, download_path: Path, cookie: str) -> None:
 
 
 def get_video_info(url: str, cookie: str):
+    headers = {
+    'Referer': 'https://learn.kodekloud.com/',
+    }
     ydl_opts = {
         "skip_download": True,
         "print_json": True,
@@ -154,6 +161,7 @@ def get_video_info(url: str, cookie: str):
         "simulate": True,
         "no_warnings": True,
         "cookiefile": cookie,
+        'http_headers': headers,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
