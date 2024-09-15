@@ -57,7 +57,7 @@ class CourseDetail(BaseModel):
     excerpt: Optional[str]
     description: str
     lessons_count: int
-    userback_id: str
+    userback_id: Optional[str]
     hidden: bool
     modules: List[Module]
     includes_section: IncludesSection
