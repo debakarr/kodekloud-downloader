@@ -7,8 +7,11 @@ import validators
 
 from kodekloud_downloader.enums import Quality
 from kodekloud_downloader.helpers import select_courses
-from kodekloud_downloader.main import download_course, download_quiz
-from kodekloud_downloader.models2 import get_all_course
+from kodekloud_downloader.main import (
+    download_course,
+    download_quiz,
+    parse_course_from_url,
+)
 from kodekloud_downloader.models.helper import collect_all_courses
 
 
@@ -71,8 +74,9 @@ def dl(
                 max_duplicate_count=max_duplicate_count,
             )
     elif validators.url(course_url):
+        course_detail = parse_course_from_url(course_url)
         download_course(
-            url=course_url,
+            course=course_detail,
             cookie=cookie,
             quality=quality,
             output_dir=output_dir,

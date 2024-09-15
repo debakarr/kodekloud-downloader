@@ -1,8 +1,9 @@
-import requests
 from typing import List
+
+import requests
+
 from kodekloud_downloader.models.course import CourseDetail
-from kodekloud_downloader.models.courses import Course
-from kodekloud_downloader.models.courses import ApiResponse
+from kodekloud_downloader.models.courses import ApiResponse, Course
 
 
 def fetch_courses(page: int, limit: int) -> ApiResponse:

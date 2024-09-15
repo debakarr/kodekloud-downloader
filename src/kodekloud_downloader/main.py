@@ -1,8 +1,6 @@
 import logging
 from collections import defaultdict
-from http.cookiejar import MozillaCookieJar
 from pathlib import Path
-import re
 from typing import Union
 
 import markdownify
@@ -13,18 +11,31 @@ from bs4 import BeautifulSoup
 from kodekloud_downloader.helpers import (
     download_all_pdf,
     download_video,
-    get_video_info,
     is_normal_content,
     normalize_name,
+    parse_token,
 )
+from kodekloud_downloader.models.course import CourseDetail
 from kodekloud_downloader.models.courses import Course
 from kodekloud_downloader.models.helper import fetch_course_detail
-from kodekloud_downloader.models2 import Quiz, Topic
+from kodekloud_downloader.models.quiz import Quiz
 
 logger = logging.getLogger(__name__)
 
 
-def download_quiz(output_dir: str, sep: bool):
+def download_quiz(output_dir: str, sep: bool) -> None:
+    """
+    Download quizzes from the API and save them as Markdown files.
+
+    :param output_dir: The directory path where the Markdown files will be saved.
+    :param sep: A boolean flag indicating whether to separate each quiz into individual files.
+                 If `True`, each quiz will be saved as a separate Markdown file. If `False`,
+                 all quizzes will be combined into a single Markdown file.
+    :return: None
+    :raises ValueError: If `output_dir` is not a valid directory path.
+    :raises requests.RequestException: For errors related to the HTTP request.
+    :raises IOError: For file I/O errors.
+    """
     quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
     response = requests.get("https://mcq-backend-main.kodekloud.com/api/quizzes/all")
     response.raise_for_status()
@@ -75,21 +86,21 @@ def download_quiz(output_dir: str, sep: bool):
         print(f"Quiz file written in {output_file}")
 
 
-def parseToken(cookiefile):
-    """Parse a cookies.txt file and return a dictionary of key value pairs
-    compatible with requests."""
+def parse_course_from_url(url: str) -> CourseDetail:
+    """
+    Parse the course slug from the given URL and fetch the course details.
 
-    cookies = {}
-    with open(cookiefile, "r") as fp:
-        for line in fp:
-            if line.strip() and not re.match(r"^\#", line):
-                lineFields = line.strip().split("\t")
-                cookies[lineFields[5]] = lineFields[6]
-    return cookies.get("session-cookie")
+    :param url: The URL from which to extract the course slug.
+    :return: An instance of `CourseDetail` containing the course details.
+    :raises ValueError: If the URL does not contain a valid course slug.
+    """
+    url = url.strip("/")
+    course_slug = url.split("/")[-1]
+    return fetch_course_detail(course_slug)
 
 
 def download_course(
-    course: Course,
+    course: Union[Course, CourseDetail],
     cookie: str,
     quality: str,
     output_dir: Union[str, Path],
@@ -98,22 +109,22 @@ def download_course(
     """
     Download a course from KodeKloud.
 
-    :param url: The course URL
+    :param course: The Course or CourseDetail object
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     :param output_dir: The output directory for the downloaded course
     :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
     """
     session = requests.Session()
-    cj = MozillaCookieJar(cookie)
-    cj.load(ignore_discard=True, ignore_expires=True)
-    session_token = parseToken(cookie)
+    session_token = parse_token(cookie)
     headers = {"authorization": f"bearer {session_token}"}
     params = {
         "course_id": course.id,
     }
 
-    course_detail = fetch_course_detail(course.slug)
+    course_detail = (
+        fetch_course_detail(course.slug) if isinstance(course, Course) else course
+    )
 
     downloaded_videos = defaultdict(int)
     for module_index, module in enumerate(course_detail.modules, start=1):
@@ -133,7 +144,11 @@ def download_course(
                 response = session.get(url, headers=headers, params=params)
                 response.raise_for_status()
                 lesson_video_url = response.json()["video_url"]
-                current_video_url = f"https://player.vimeo.com/video/{lesson_video_url.split('/')[-1]}"
+                # TODO: Maybe if in future KodeKloud change the video streaming service, this area will need some working.
+                # Try to generalize this for future enhacement?
+                current_video_url = (
+                    f"https://player.vimeo.com/video/{lesson_video_url.split('/')[-1]}"
+                )
                 if (
                     current_video_url in downloaded_videos
                     and downloaded_videos[current_video_url] > max_duplicate_count
@@ -178,11 +193,13 @@ def create_file_path(
     )
 
 
-def download_video_lesson(lesson_video_url, file_path: Path, cookie: str, quality: str) -> None:
+def download_video_lesson(
+    lesson_video_url, file_path: Path, cookie: str, quality: str
+) -> None:
     """
     Download a video lesson.
 
-    :param lesson: The lesson object
+    :param lesson_video_url: The lesson video URL
     :param file_path: The output file path for the video
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
@@ -212,10 +229,11 @@ def download_resource_lesson(lesson_url, file_path: Path, cookie: str) -> None:
     """
     Download a resource lesson.
 
-    :param lesson: The lesson object
+    :param lesson_url: The lesson url
     :param file_path: The output file path for the resource
     :param cookie: The user's authentication cookie
     """
+    # TODO: Did we break this? I have no idea.
     page = requests.get(lesson_url)
     soup = BeautifulSoup(page.content, "html.parser")
     content = soup.find("div", class_="learndash_content_wrap")
