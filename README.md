@@ -296,3 +296,19 @@ To convert the quiz markdown to PDF you can use any online PDF converter like [a
 ## Colab Notebook to download directly in Personal GDrive
 
 You can open [this notebook](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing) with your google account were you want to download the course. Please note that you should open with the same account for which you want to link the drive.
+
+## Troubleshoot
+
+If you are getting the below message while downloading course, make sure you have the proper plan.
+
+```console
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url
+```
+
+---
+
+If you are getting the below message while downloading course, make sure you regenerate your cookie.
+
+```console
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url
+```
