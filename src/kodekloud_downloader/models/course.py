@@ -54,10 +54,10 @@ class CourseDetail(BaseModel):
     difficulty_level: Optional[str]
     categories: List[Category]
     plan: str
-    excerpt: str
+    excerpt: Optional[str]
     description: str
     lessons_count: int
-    userback_id: str
+    userback_id: Optional[str]
     hidden: bool
     modules: List[Module]
     includes_section: IncludesSection
