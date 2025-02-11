@@ -40,7 +40,7 @@ class IncludesSection(BaseModel):
     quiz_lessons: bool
     quiz_lesson_count: int
     mock_exams: bool
-    community_support: bool
+    community_support: Optional[bool] = None
     hours_of_video: int
 
 
