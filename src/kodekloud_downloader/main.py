@@ -37,7 +37,8 @@ def download_quiz(output_dir: str, sep: bool) -> None:
     :raises IOError: For file I/O errors.
     """
     quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
-    response = requests.get("https://mcq-backend-main.kodekloud.com/api/quizzes/all")
+    response = requests.get(
+        "https://mcq-backend-main.kodekloud.com/api/quizzes/all")
     response.raise_for_status()
 
     quizzes = [Quiz(**item) for item in response.json()]
@@ -60,7 +61,8 @@ def download_quiz(output_dir: str, sep: bool) -> None:
             if script := question.code.get("script"):
                 quiz_markdown.append(f"\n**Code**: \n{script}")
             if question.explanation:
-                quiz_markdown.append(f"\n**Explaination**: {question.explanation}")
+                quiz_markdown.append(
+                    f"\n**Explaination**: {question.explanation}")
             if question.documentationLink:
                 quiz_markdown.append(
                     f"\n**Documentation Link**: {question.documentationLink}"
@@ -117,13 +119,14 @@ def download_course(
     """
     session = requests.Session()
     session_token = parse_token(cookie)
-    headers = {"authorization": f"bearer {session_token}"}
+    headers = {"Authorization": f"Bearer {session_token}"}
     params = {
         "course_id": course.id,
     }
 
     course_detail = (
-        fetch_course_detail(course.slug) if isinstance(course, Course) else course
+        fetch_course_detail(course.slug) if isinstance(
+            course, Course) else course
     )
 
     downloaded_videos = defaultdict(int)
@@ -158,7 +161,8 @@ def download_course(
                         "\nYour cookie might have expired or you don't have access/enrolled to the course."
                         "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
                     )
-                download_video_lesson(current_video_url, file_path, cookie, quality)
+                download_video_lesson(
+                    current_video_url, file_path, cookie, quality)
                 downloaded_videos[current_video_url] += 1
             else:
                 lesson_url = f"https://learn.kodekloud.com/user/courses/{course.slug}/module/{module.id}/lesson/{lesson.id}"
@@ -244,4 +248,5 @@ def download_resource_lesson(lesson_url, file_path: Path, cookie: str) -> None:
         file_path.with_suffix(".md").write_text(
             markdownify.markdownify(content.prettify()), encoding="utf-8"
         )
-        download_all_pdf(content=content, download_path=file_path.parent, cookie=cookie)
+        download_all_pdf(
+            content=content, download_path=file_path.parent, cookie=cookie)
