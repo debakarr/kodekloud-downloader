@@ -24,18 +24,6 @@ logger = logging.getLogger(__name__)
 
 
 def download_quiz(output_dir: str, sep: bool) -> None:
-    """
-    Download quizzes from the API and save them as Markdown files.
-
-    :param output_dir: The directory path where the Markdown files will be saved.
-    :param sep: A boolean flag indicating whether to separate each quiz into individual files.
-                 If `True`, each quiz will be saved as a separate Markdown file. If `False`,
-                 all quizzes will be combined into a single Markdown file.
-    :return: None
-    :raises ValueError: If `output_dir` is not a valid directory path.
-    :raises requests.RequestException: For errors related to the HTTP request.
-    :raises IOError: For file I/O errors.
-    """
     quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
     response = requests.get("https://mcq-backend-main.kodekloud.com/api/quizzes/all")
     response.raise_for_status()
@@ -60,7 +48,7 @@ def download_quiz(output_dir: str, sep: bool) -> None:
             if script := question.code.get("script"):
                 quiz_markdown.append(f"\n**Code**: \n{script}")
             if question.explanation:
-                quiz_markdown.append(f"\n**Explaination**: {question.explanation}")
+                quiz_markdown.append(f"\n**Explanation**: {question.explanation}")
             if question.documentationLink:
                 quiz_markdown.append(
                     f"\n**Documentation Link**: {question.documentationLink}"
@@ -87,13 +75,6 @@ def download_quiz(output_dir: str, sep: bool) -> None:
 
 
 def parse_course_from_url(url: str) -> CourseDetail:
-    """
-    Parse the course slug from the given URL and fetch the course details.
-
-    :param url: The URL from which to extract the course slug.
-    :return: An instance of `CourseDetail` containing the course details.
-    :raises ValueError: If the URL does not contain a valid course slug.
-    """
     url = url.strip("/")
     course_slug = url.split("/")[-1]
     return fetch_course_detail(course_slug)
@@ -106,21 +87,10 @@ def download_course(
     output_dir: Union[str, Path],
     max_duplicate_count: int,
 ) -> None:
-    """
-    Download a course from KodeKloud.
-
-    :param course: The Course or CourseDetail object
-    :param cookie: The user's authentication cookie
-    :param quality: The video quality (e.g. "720p")
-    :param output_dir: The output directory for the downloaded course
-    :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
-    """
     session = requests.Session()
     session_token = parse_token(cookie)
     headers = {"authorization": f"bearer {session_token}"}
-    params = {
-        "course_id": course.id,
-    }
+    params = {"course_id": course.id}
 
     course_detail = (
         fetch_course_detail(course.slug) if isinstance(course, Course) else course
@@ -139,25 +109,43 @@ def download_course(
             )
 
             if lesson.type == "video":
-                url = f"https://learn-api.kodekloud.com/api/lessons/{lesson.id}"
-
+                url = f"https://learn-api.kodekloud.com/api/courses/{course.id}"
                 response = session.get(url, headers=headers, params=params)
                 response.raise_for_status()
-                lesson_video_url = response.json()["video_url"]
-                # TODO: Maybe if in future KodeKloud change the video streaming service, this area will need some working.
-                # Try to generalize this for future enhacement?
-                current_video_url = (
-                    f"https://player.vimeo.com/video/{lesson_video_url.split('/')[-1]}"
-                )
+                course_data = response.json()
+
+                # find the lesson inside course modules
+                lesson_data = None
+                for module_data in course_data.get("modules", []):
+                    for l in module_data.get("lessons", []):
+                        if l.get("id") == lesson.id:
+                            lesson_data = l
+                            break
+                    if lesson_data:
+                        break
+
+                if not lesson_data:
+                    logger.error(f"Lesson {lesson.id} not found in course {course.id}")
+                    continue
+
+                lesson_video_url = lesson_data.get("video_url")
+                if not lesson_video_url:
+                    logger.error(f"No video_url found for lesson {lesson.id} ({lesson.title})")
+                    continue
+
+                # Vimeo link
+                current_video_url = f"https://player.vimeo.com/video/{lesson_video_url.split('/')[-1]}"
+
                 if (
                     current_video_url in downloaded_videos
                     and downloaded_videos[current_video_url] > max_duplicate_count
                 ):
                     raise SystemExit(
-                        f"The folowing video is downloaded more than {max_duplicate_count}."
+                        f"The following video is downloaded more than {max_duplicate_count} times."
                         "\nYour cookie might have expired or you don't have access/enrolled to the course."
                         "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
                     )
+
                 download_video_lesson(current_video_url, file_path, cookie, quality)
                 downloaded_videos[current_video_url] += 1
             else:
@@ -173,17 +161,6 @@ def create_file_path(
     lesson_index: int,
     lesson_name: str,
 ) -> Path:
-    """
-    Create a file path for a lesson.
-
-    :param output_dir: The output directory for the downloaded course
-    :param course_name: The course name
-    :param module_index: The module index
-    :param item_name: The module name
-    :param lesson_index: The lesson index
-    :param lesson_name: The lesson name
-    :return: The created file path
-    """
     return Path(
         Path(output_dir)
         / "KodeKloud"
@@ -196,14 +173,6 @@ def create_file_path(
 def download_video_lesson(
     lesson_video_url, file_path: Path, cookie: str, quality: str
 ) -> None:
-    """
-    Download a video lesson.
-
-    :param lesson_video_url: The lesson video URL
-    :param file_path: The output file path for the video
-    :param cookie: The user's authentication cookie
-    :param quality: The video quality (e.g. "720p")
-    """
     logger.info(f"Writing video file... {file_path}...")
     file_path.parent.mkdir(parents=True, exist_ok=True)
     logger.info(f"Parsing url: {lesson_video_url}")
@@ -214,7 +183,7 @@ def download_video_lesson(
             cookie=cookie,
             quality=quality,
         )
-    except yt_dlp.utils.UnsupportedError as ex:
+    except yt_dlp.utils.UnsupportedError:
         logger.error(
             f"Could not download video in link {lesson_video_url}. "
             "Please open link manually and verify that video exists!"
@@ -226,14 +195,6 @@ def download_video_lesson(
 
 
 def download_resource_lesson(lesson_url, file_path: Path, cookie: str) -> None:
-    """
-    Download a resource lesson.
-
-    :param lesson_url: The lesson url
-    :param file_path: The output file path for the resource
-    :param cookie: The user's authentication cookie
-    """
-    # TODO: Did we break this? I have no idea.
     page = requests.get(lesson_url)
     soup = BeautifulSoup(page.content, "html.parser")
     content = soup.find("div", class_="learndash_content_wrap")
