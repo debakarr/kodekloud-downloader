@@ -12,7 +12,7 @@ from kodekloud_downloader.helpers import (
     download_all_pdf,
     download_video,
     is_normal_content,
-    normalize_name,
+    sanitize_filename,
 )
 from kodekloud_downloader.models.course import CourseDetail
 from kodekloud_downloader.models.courses import Course
@@ -173,6 +173,23 @@ def download_course(
                 download_resource_lesson(lesson_url, file_path, cookie)
 
 
+# Maximum safe path length (Windows MAX_PATH is 260, leave room for
+# the drive letter, colon, separator, and yt-dlp file extension)
+_MAX_PATH_LENGTH = 220
+
+
+def _shorten_component(name: str, max_len: int) -> str:
+    """Truncate a path component, keeping its extension if present."""
+    if len(name) <= max_len:
+        return name
+    # Keep the extension
+    dot = name.rfind(".")
+    if dot > 0 and len(name) - dot <= 10:
+        stem = name[: dot - (len(name) - max_len + 1)]
+        return stem + name[dot:]
+    return name[:max_len]
+
+
 def create_file_path(
     output_dir: Union[str, Path],
     course_name: str,
@@ -182,23 +199,44 @@ def create_file_path(
     lesson_name: str,
 ) -> Path:
     """
-    Create a file path for a lesson.
+    Create a file path for a lesson, ensuring it stays within safe
+    filesystem length limits.
 
     :param output_dir: The output directory for the downloaded course
     :param course_name: The course name
     :param module_index: The module index
-    :param item_name: The module name
+    :param module_name: The module name
     :param lesson_index: The lesson index
     :param lesson_name: The lesson name
     :return: The created file path
     """
-    return Path(
-        Path(output_dir)
-        / "KodeKloud"
-        / normalize_name(course_name)
-        / f"{module_index} - {normalize_name(module_name)}"
-        / f"{lesson_index} - {normalize_name(lesson_name)}"
-    )
+    parts = [
+        "KodeKloud",
+        sanitize_filename(course_name, max_length=80),
+        sanitize_filename(f"{module_index} - {module_name}", max_length=80),
+        sanitize_filename(f"{lesson_index} - {lesson_name}", max_length=80),
+    ]
+
+    # Build the base path and check total length
+    base = Path(output_dir)
+    full = base / Path(*parts)
+
+    if len(str(full)) > _MAX_PATH_LENGTH:
+        # Shorten components from most-specific to least
+        overage = len(str(full)) - _MAX_PATH_LENGTH
+        # Start with the last (most specific) component
+        for i in range(len(parts) - 1, -1, -1):
+            if overage <= 0:
+                break
+            current_len = len(parts[i])
+            if current_len > 10:
+                shorten_by = min(overage, current_len - 10)
+                parts[i] = parts[i][: current_len - shorten_by]
+                # Rebuild the path
+                full = base / Path(*parts)
+                overage = len(str(full)) - _MAX_PATH_LENGTH
+
+    return full
 
 
 def download_video_lesson(

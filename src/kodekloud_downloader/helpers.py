@@ -85,6 +85,55 @@ def select_courses(courses: List[Course]) -> List[Course]:
     return user_selected_courses
 
 
+# Characters not allowed in Windows filenames
+_WINDOWS_RESERVED_CHARS = set('\\/:*?"<>|')
+# Reserved names on Windows (case-insensitive)
+_WINDOWS_RESERVED_NAMES = {
+    "con",
+    "prn",
+    "aux",
+    "nul",
+    "com1",
+    "com2",
+    "com3",
+    "com4",
+    "com5",
+    "com6",
+    "com7",
+    "com8",
+    "com9",
+    "lpt1",
+    "lpt2",
+    "lpt3",
+    "lpt4",
+    "lpt5",
+    "lpt6",
+    "lpt7",
+    "lpt8",
+    "lpt9",
+}
+
+
+def sanitize_filename(name: str, max_length: int = 100) -> str:
+    """Sanitize a string for use as a filename component.
+
+    Removes or replaces characters that are invalid across platforms,
+    trims whitespace, and truncates to ``max_length``.
+
+    :param name: The raw string to sanitize.
+    :param max_length: Maximum allowed length (default 100).
+    :return: A safe filename string.
+    """
+    safe = "".join("_" if c in _WINDOWS_RESERVED_CHARS else c for c in name)
+    while "__" in safe:
+        safe = safe.replace("__", "_")
+    safe = safe.strip(". ")
+    safe = safe[:max_length].rstrip(". ")
+    if not safe or safe.lower().rstrip(".") in _WINDOWS_RESERVED_NAMES:
+        safe = "_"
+    return safe
+
+
 def normalize_name(name: str) -> str:
     """
     Remove punctuation from a string.
