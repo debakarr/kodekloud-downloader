@@ -95,19 +95,25 @@ def normalize_name(name: str) -> str:
     return name.translate(str.maketrans("", "", string.punctuation))
 
 
-def download_video(url: str, output_path: Path, cookie: str, quality: str) -> None:
+def download_video(
+    url: str,
+    output_path: Path,
+    cookie: Optional[str],
+    quality: str,
+) -> None:
     """
     Download a video using yt_dlp with the given options.
 
     :param url: The video URL
     :param output_path: The output directory for the downloaded video
-    :param cookie: The user's authentication cookie
+    :param cookie: The user's authentication cookie file path (None for
+        browser-based auth)
     :param quality: The video quality (e.g. "720p")
     """
     headers = {
         "Referer": "https://learn.kodekloud.com/",
     }
-    ydl_opts = {
+    ydl_opts: dict = {
         "format": (
             f"bestvideo[height<={quality[:-1]}]+bestaudio/"
             f"best[height<={quality[:-1]}]/best"
@@ -115,12 +121,13 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         "concurrent_fragment_downloads": 15,
         "outtmpl": f"{output_path}.%(ext)s",
         "verbose": logger.getEffectiveLevel() == logging.DEBUG,
-        "cookiefile": cookie,
         "merge_output_format": "mkv",
         "writesubtitles": True,
         "no_write_sub": True,
         "http_headers": headers,
     }
+    if cookie is not None:
+        ydl_opts["cookiefile"] = cookie
     logger.debug(f"Calling download with following options: {ydl_opts}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download(url)
@@ -138,20 +145,23 @@ def is_normal_content(content) -> bool:
     return not (is_lab or is_feedback)
 
 
-def download_all_pdf(content, download_path: Path, cookie: str) -> None:
+def download_all_pdf(content, download_path: Path, cookie: Optional[str]) -> None:
     """
     Download all PDF files from the given content.
 
     :param content: The content containing the PDF links
     :param download_path: The output directory for the downloaded PDFs
-    :param cookie: The user's authentication cookie
+    :param cookie: The user's authentication cookie (None for browser auth)
     """
     for link in content.find_all("a"):
         href = link.get("href")
         if href.endswith("pdf"):
             file_name = download_path / Path(href).name
             logger.info(f"Downloading {file_name}...")
-            response = requests.get(href, headers={"Cookie": cookie}, timeout=30)
+            headers = {}
+            if cookie is not None:
+                headers["Cookie"] = cookie
+            response = requests.get(href, headers=headers, timeout=30)
             file_name.write_bytes(response.content)
 
 
