@@ -7,17 +7,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.8"
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: "1.6.1"
+      - uses: astral-sh/setup-uv@v5
       - name: Bump version
-        run: poetry version ${{github.ref_name}}
-      - name: Set credential
-        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+        run: uv version ${{github.ref_name}}
       - name: Build and publish to pypi
-        run: poetry publish --build
+        run: |
+          uv build
+          uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
