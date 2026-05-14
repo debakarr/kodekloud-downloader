@@ -213,11 +213,14 @@ def get_session_token_from_browser(
         try:
             page.goto(
                 "https://learn.kodekloud.com/user/courses",
-                wait_until="domcontentloaded",
+                wait_until="networkidle",
                 timeout=30000,
             )
         except Exception:
             pass
+
+        # Small pause for SPA redirects
+        time.sleep(2)
 
         # Check again after navigation
         token = _extract_session_cookie(context)
@@ -228,6 +231,65 @@ def get_session_token_from_browser(
             else:
                 browser.close()
             return token
+
+        # --- Step 4: if not logged in, prompt user ---
+        current_url = page.url.lower()
+
+        if all(
+            word not in current_url for word in ["sign-in", "login", "auth", "signin"]
+        ):
+            # If we're not on a login page, try navigating to the login page
+            try:
+                page.goto(
+                    "https://identity.kodekloud.com/sign-in",
+                    wait_until="networkidle",
+                    timeout=15000,
+                )
+            except Exception:
+                pass
+
+        print(
+            "Please sign in to KodeKloud in the opened browser window, "
+            "then press Enter here..."
+        )
+        try:
+            input()
+        except (EOFError, KeyboardInterrupt):
+            pass
+
+        # Wait for redirect after login
+        time.sleep(4)
+        try:
+            page.goto(
+                "https://learn.kodekloud.com/user/courses",
+                wait_until="networkidle",
+                timeout=30000,
+            )
+        except Exception:
+            pass
+        time.sleep(2)
+
+        # --- Step 5: final extraction attempt ---
+        token = _extract_session_cookie(context)
+        # Also try waiting a bit more for async cookie setting
+        if token is None:
+            time.sleep(3)
+            token = _extract_session_cookie(context)
+
+        # Cleanup
+        if chrome_proc is not None:
+            chrome_proc.terminate()
+        else:
+            browser.close()
+
+        if token:
+            logger.info("Session token extracted successfully")
+        else:
+            print(
+                "Could not find session-cookie. Ensure you are signed in to KodeKloud."
+            )
+
+        return token
 
         # --- Step 4: if not logged in, prompt user ---
         current_url = page.url
