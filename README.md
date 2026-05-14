@@ -119,13 +119,18 @@ This will display the FFmpeg version and build information, confirming that the 
 
 ## 💻 Installation
 
-To install kodekloud-downloader, simply run the following command:
-
 ```console
 pip install -U kodekloud-downloader
 ```
 
+For **automatic browser-based cookie extraction** (avoids manual cookie setup):
+
+```console
+pip install -U "kodekloud-downloader[browser]"
+```
+
 You can also install the latest main changes:
+
 ```console
 pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
@@ -170,34 +175,51 @@ uv run mypy src/
 uv run pytest --cov=src/
 ```
 
-### Cookie Requirements
+### Authentication
 
-KodeKloud uses an **HttpOnly session cookie** (`session-cookie`) for API authentication.
-Standard cookie export extensions cannot capture HttpOnly cookies. To get a working
-cookie file, follow these steps after signing in at [learn.kodekloud.com](https://learn.kodekloud.com):
+#### Option A: Browser-based (recommended, automatic)
 
-1. **Export non-HttpOnly cookies** using [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)
-   or any similar extension. Save to `kodekloud.com_cookies.txt`.
+If you installed with `[browser]` extras, use the `--browser` flag to extract the
+session token directly from your running Chrome browser:
 
-2. **Extract the `session-cookie` manually** from Chrome DevTools:
-   - Open DevTools (`F12`) on learn.kodekloud.com
-   - Go to **Application** → **Storage** → **Cookies** → `https://learn.kodekloud.com`
-   - Find the `session-cookie` entry and copy its **Value** (a long JWT token)
-   
-3. **Add it to your cookie file** — append this line (replace `<VALUE>` with the token):
+```console
+# 1. Start Chrome with remote debugging enabled:
+chrome.exe --remote-debugging-port=9222
+
+# 2. Sign in at https://learn.kodekloud.com
+
+# 3. Run the downloader:
+kodekloud dl --browser -o . "https://kodekloud.com/courses/..."
+```
+
+The tool connects to your running Chrome via the DevTools Protocol and extracts the
+HttpOnly `session-cookie` automatically. No manual cookie file editing needed.
+The `session-cookie` is refreshed ~every hour — just re-run with `--browser`.
+
+> **Environment variable**: You can set `KODEKLOUD_USE_BROWSER=1` to make
+> `--browser` the default behavior without passing the flag each time.
+
+#### Option B: Cookie file (lightweight, no extra deps)
+
+Export cookies from kodekloud.com after signing in. Use a browser extension like
+[Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)
+and save to `kodekloud.com_cookies.txt`.
+
+KodeKloud uses an **HttpOnly session cookie** (`session-cookie`) for API auth.
+Standard export extensions cannot capture HttpOnly cookies, so you need to add it
+manually:
+
+1. Open DevTools (`F12`) on [learn.kodekloud.com](https://learn.kodekloud.com)
+2. Go to **Application** → **Storage** → **Cookies** → `https://learn.kodekloud.com`
+3. Find `session-cookie`, copy its **Value** (a long JWT token)
+4. Append this line to your cookie file (replace `<VALUE>`):
    ```
    .kodekloud.com	TRUE	/	TRUE	0	session-cookie	<VALUE>
    ```
 
-The `session-cookie` expires after ~1 hour. When you get a 401 error, repeat steps 2-3
-to refresh it.
+The `session-cookie` expires after ~1 hour. When you get a 401 error, repeat steps 1-4.
 
-> **Tip**: You can also use the DevTools **Console** tab to run:
-> ```javascript
-> copy(document.cookie.split('; ').find(c => c.startsWith('session-cookie='))?.split('=')[1])
-> ```
-> But note: `session-cookie` is HttpOnly, so `document.cookie` won't contain it.
-> You must use the Application tab to see HttpOnly cookies.
+> **Tip**: Install with `[browser]` extras and use `--browser` to skip all manual steps.
 
 ## Try in Browser
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing)

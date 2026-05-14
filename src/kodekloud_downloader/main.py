@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import markdownify
 import requests
@@ -13,7 +13,6 @@ from kodekloud_downloader.helpers import (
     download_video,
     is_normal_content,
     normalize_name,
-    parse_token,
 )
 from kodekloud_downloader.models.course import CourseDetail
 from kodekloud_downloader.models.courses import Course
@@ -104,23 +103,25 @@ def parse_course_from_url(url: str) -> CourseDetail:
 
 def download_course(
     course: Union[Course, CourseDetail],
-    cookie: str,
     quality: str,
     output_dir: Union[str, Path],
     max_duplicate_count: int,
+    session_token: str,
+    cookie: Optional[str] = None,
 ) -> None:
     """
     Download a course from KodeKloud.
 
     :param course: The Course or CourseDetail object
-    :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     :param output_dir: The output directory for the downloaded course
     :param max_duplicate_count: Maximum duplicate video before after cookie
         expire message will be raised
+    :param session_token: The Bearer token for API authentication
+    :param cookie: Cookie file path for yt-dlp (video download). Not needed
+        when using --browser mode (playwright handles auth).
     """
     session = requests.Session()
-    session_token = parse_token(cookie)
     headers = {"authorization": f"Bearer {session_token}"}
     params = {
         "course_id": course.id,
@@ -201,7 +202,10 @@ def create_file_path(
 
 
 def download_video_lesson(
-    lesson_video_url, file_path: Path, cookie: str, quality: str
+    lesson_video_url,
+    file_path: Path,
+    cookie: Optional[str],
+    quality: str,
 ) -> None:
     """
     Download a video lesson.
@@ -233,7 +237,9 @@ def download_video_lesson(
         )
 
 
-def download_resource_lesson(lesson_url, file_path: Path, cookie: str) -> None:
+def download_resource_lesson(
+    lesson_url, file_path: Path, cookie: Optional[str]
+) -> None:
     """
     Download a resource lesson.
 
