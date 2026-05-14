@@ -245,12 +245,26 @@ def get_session_token_from_browser(
             return token
 
         # --- Step 4: if not logged in, prompt user ---
-        current_url = page.url.lower()
+        # Set up a network response handler to catch the session-cookie
+        # from the set-id-token API call
+        intercepted_token: Optional[str] = None
 
+        def _handle_response(response):
+            nonlocal intercepted_token
+            if "/api/set-id-token" in response.url:
+                set_cookie = response.headers.get("set-cookie", "")
+                for part in set_cookie.split(";"):
+                    part = part.strip()
+                    if part.startswith("session-cookie="):
+                        intercepted_token = part.split("=", 1)[1]
+                        logger.info("Intercepted session-cookie from API")
+
+        page.on("response", _handle_response)
+
+        current_url = page.url.lower()
         if all(
             word not in current_url for word in ["sign-in", "login", "auth", "signin"]
         ):
-            # If we're not on a login page, try navigating to the login page
             try:
                 page.goto(
                     "https://identity.kodekloud.com/sign-in",
@@ -269,24 +283,33 @@ def get_session_token_from_browser(
         except (EOFError, KeyboardInterrupt):
             pass
 
-        # Wait for redirect after login
-        time.sleep(4)
-        try:
-            page.goto(
-                "https://learn.kodekloud.com/user/courses",
-                wait_until="networkidle",
-                timeout=30000,
-            )
-        except Exception:
-            pass
-        time.sleep(2)
+        # Wait for the session-cookie to arrive via network interception
+        logger.info("Waiting for session-cookie...")
+        for _ in range(20):  # wait up to ~40s
+            if intercepted_token:
+                break
+            time.sleep(2)
 
-        # --- Step 5: final extraction attempt ---
-        token = _extract_session_cookie(context)
-        # Also try waiting a bit more for async cookie setting
+        token = intercepted_token
+
+        # Fallback: try extracting from cookies
         if token is None:
-            time.sleep(3)
-            token = _extract_session_cookie(context)
+            try:
+                page.goto(
+                    "https://learn.kodekloud.com/user/courses",
+                    wait_until="networkidle",
+                    timeout=30000,
+                )
+            except Exception:
+                pass
+            for _ in range(10):
+                time.sleep(2)
+                try:
+                    token = _extract_session_cookie(context)
+                except Exception:
+                    continue
+                if token:
+                    break
 
         # Cleanup
         if chrome_proc is not None:
