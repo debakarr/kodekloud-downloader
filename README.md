@@ -172,9 +172,32 @@ uv run pytest --cov=src/
 
 ### Cookie Requirements
 
-Export cookies from kodekloud.com after signing in. Use a browser extension like
-[Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc).
-If the tool returns a 401 error, re-export your cookies to refresh the session token.
+KodeKloud uses an **HttpOnly session cookie** (`session-cookie`) for API authentication.
+Standard cookie export extensions cannot capture HttpOnly cookies. To get a working
+cookie file, follow these steps after signing in at [learn.kodekloud.com](https://learn.kodekloud.com):
+
+1. **Export non-HttpOnly cookies** using [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)
+   or any similar extension. Save to `kodekloud.com_cookies.txt`.
+
+2. **Extract the `session-cookie` manually** from Chrome DevTools:
+   - Open DevTools (`F12`) on learn.kodekloud.com
+   - Go to **Application** → **Storage** → **Cookies** → `https://learn.kodekloud.com`
+   - Find the `session-cookie` entry and copy its **Value** (a long JWT token)
+   
+3. **Add it to your cookie file** — append this line (replace `<VALUE>` with the token):
+   ```
+   .kodekloud.com	TRUE	/	TRUE	0	session-cookie	<VALUE>
+   ```
+
+The `session-cookie` expires after ~1 hour. When you get a 401 error, repeat steps 2-3
+to refresh it.
+
+> **Tip**: You can also use the DevTools **Console** tab to run:
+> ```javascript
+> copy(document.cookie.split('; ').find(c => c.startsWith('session-cookie='))?.split('=')[1])
+> ```
+> But note: `session-cookie` is HttpOnly, so `document.cookie` won't contain it.
+> You must use the Application tab to see HttpOnly cookies.
 
 ## Try in Browser
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing)
