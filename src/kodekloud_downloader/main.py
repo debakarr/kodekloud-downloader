@@ -23,7 +23,7 @@ from kodekloud_downloader.models.quiz import Quiz
 logger = logging.getLogger(__name__)
 
 
-def download_quiz(output_dir: str, sep: bool) -> None:
+def download_quiz(output_dir: Union[str, Path], sep: bool) -> None:
     """
     Download quizzes from the API and save them as Markdown files.
 
@@ -130,7 +130,7 @@ def download_course(
         fetch_course_detail(course.slug) if isinstance(course, Course) else course
     )
 
-    downloaded_videos = defaultdict(int)
+    downloaded_videos: defaultdict = defaultdict(int)
     for module_index, module in enumerate(course_detail.modules, start=1):
         for lesson_index, lesson in enumerate(module.lessons, start=1):
             file_path = create_file_path(

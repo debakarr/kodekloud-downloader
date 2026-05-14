@@ -30,7 +30,7 @@ def parse_input(input_str: str) -> List[int]:
         [1, 2, 3, 6, 7, 8, 10, 11]
     """
     ranges = input_str.split(",")
-    result = []
+    result: List[int] = []
 
     for r in ranges:
         if "-" in r:
@@ -126,11 +126,11 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         ydl.download(url)
 
 
-def is_normal_content(content: str) -> bool:
+def is_normal_content(content) -> bool:
     """
     Check if the content is not a lab or feedback.
 
-    :param content: The input content
+    :param content: The input content (BeautifulSoup Tag)
     :return: True if the content is normal, False otherwise
     """
     is_lab = content.find("div", class_="start-lab-button")
