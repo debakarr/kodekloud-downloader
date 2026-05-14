@@ -130,6 +130,52 @@ You can also install the latest main changes:
 pip install -U git+https://github.com/debakarr/kodekloud-downloader.git
 ```
 
+## 🛠️ Development Setup
+
+### Prerequisites
+- Python 3.8 or higher
+- [uv](https://docs.astral.sh/uv/) (fast Python package manager)
+
+### Setup
+
+Clone the repository and install dependencies:
+
+```console
+git clone https://github.com/debakarr/kodekloud-downloader.git
+cd kodekloud-downloader
+uv sync --group dev
+```
+
+### Code Quality
+
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting:
+
+```console
+# Lint
+uv run ruff check src/ tests/
+
+# Format
+uv run ruff format src/ tests/
+```
+
+### Type Checking
+
+```console
+uv run mypy src/
+```
+
+### Running Tests
+
+```console
+uv run pytest --cov=src/
+```
+
+### Cookie Requirements
+
+Export cookies from kodekloud.com after signing in. Use a browser extension like
+[Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc).
+If the tool returns a 401 error, re-export your cookies to refresh the session token.
+
 ## Try in Browser
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GsgFcqa_43GYeDKmoa0CXsRfDySrzvzT?usp=sharing)
 

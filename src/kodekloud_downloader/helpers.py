@@ -46,7 +46,8 @@ def parse_input(input_str: str) -> List[int]:
 
 def select_courses(courses: List[Course]) -> List[Course]:
     """
-    Display a table of courses and ask the user to select one or multiple courses by entering its number.
+    Display a table of courses and ask the user to select one or
+    multiple courses by entering its number.
 
     :param courses: A list of Course objects to choose from
     :return: The selected list of Course object
@@ -74,7 +75,8 @@ def select_courses(courses: List[Course]) -> List[Course]:
     user_selected_courses = []
     selected_courses = parse_input(
         input(
-            "Enter the courses you want to select (Multiple courses can be passes using this format 1,6-9,10-11): "
+            "Enter the courses you want to select "
+            "(Multiple courses can be passes using this format 1,6-9,10-11): "
         )
     )
     for selected_course in selected_courses:
@@ -106,7 +108,10 @@ def download_video(url: str, output_path: Path, cookie: str, quality: str) -> No
         "Referer": "https://learn.kodekloud.com/",
     }
     ydl_opts = {
-        "format": f"bestvideo[height<={quality[:-1]}]+bestaudio/best[height<={quality[:-1]}]/best",
+        "format": (
+            f"bestvideo[height<={quality[:-1]}]+bestaudio/"
+            f"best[height<={quality[:-1]}]/best"
+        ),
         "concurrent_fragment_downloads": 15,
         "outtmpl": f"{output_path}.%(ext)s",
         "verbose": logger.getEffectiveLevel() == logging.DEBUG,
@@ -146,7 +151,7 @@ def download_all_pdf(content, download_path: Path, cookie: str) -> None:
         if href.endswith("pdf"):
             file_name = download_path / Path(href).name
             logger.info(f"Downloading {file_name}...")
-            response = requests.get(href, headers={"Cookie": cookie})
+            response = requests.get(href, headers={"Cookie": cookie}, timeout=30)
             file_name.write_bytes(response.content)
 
 
@@ -155,21 +160,21 @@ def parse_token(cookiefile: str) -> Optional[str]:
     Parse the session cookie from a file containing cookies.
 
     :param cookiefile: The path to the file containing cookies.
-    :return: The value of the 'session-cookie' if found, otherwise None.
+    :return: The value of the session cookie if found, otherwise None.
     :raises FileNotFoundError: If the cookie file does not exist.
     :raises IOError: If there is an error reading the file.
     """
     cookies = {}
     try:
-        with open(cookiefile, "r") as fp:
+        with open(cookiefile) as fp:
             for line in fp:
                 if line.strip() and not re.match(r"^\#", line):
                     line_fields = line.strip().split("\t")
                     if len(line_fields) > 6:
                         cookies[line_fields[5]] = line_fields[6]
     except FileNotFoundError:
-        raise FileNotFoundError(f"The file {cookiefile} does not exist.")
-    except IOError as e:
-        raise IOError(f"Error reading the file {cookiefile}: {e}")
+        raise FileNotFoundError(f"The file {cookiefile} does not exist.") from None
+    except OSError as e:
+        raise OSError(f"Error reading the file {cookiefile}: {e}") from e
 
-    return cookies.get("session-cookie")
+    return cookies.get("session-cookie") or cookies.get("_secure-user-session")

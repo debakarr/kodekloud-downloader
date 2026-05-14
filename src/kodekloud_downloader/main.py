@@ -28,16 +28,19 @@ def download_quiz(output_dir: str, sep: bool) -> None:
     Download quizzes from the API and save them as Markdown files.
 
     :param output_dir: The directory path where the Markdown files will be saved.
-    :param sep: A boolean flag indicating whether to separate each quiz into individual files.
-                 If `True`, each quiz will be saved as a separate Markdown file. If `False`,
-                 all quizzes will be combined into a single Markdown file.
+    :param sep: A boolean flag indicating whether to separate each quiz into
+        individual files. If `True`, each quiz will be saved as a separate
+        Markdown file. If `False`, all quizzes will be combined into a single
+        Markdown file.
     :return: None
     :raises ValueError: If `output_dir` is not a valid directory path.
     :raises requests.RequestException: For errors related to the HTTP request.
     :raises IOError: For file I/O errors.
     """
     quiz_markdown = [] if sep else ["# KodeKloud Quiz"]
-    response = requests.get("https://mcq-backend-main.kodekloud.com/api/quizzes/all")
+    response = requests.get(
+        "https://mcq-backend-main.kodekloud.com/api/quizzes/all", timeout=30
+    )
     response.raise_for_status()
 
     quizzes = [Quiz(**item) for item in response.json()]
@@ -53,7 +56,7 @@ def download_quiz(output_dir: str, sep: bool) -> None:
             quiz_markdown.append("\n")
             for answer in question.answers:
                 quiz_markdown.append(f"* [ ] {answer}")
-            quiz_markdown.append(f"\n**Correct answer:**")
+            quiz_markdown.append("\n**Correct answer:**")
             for answer in question.correctAnswers:
                 quiz_markdown.append(f"* [x] {answer}")
 
@@ -113,11 +116,12 @@ def download_course(
     :param cookie: The user's authentication cookie
     :param quality: The video quality (e.g. "720p")
     :param output_dir: The output directory for the downloaded course
-    :param max_duplicate_count: Maximum duplicate video before after cookie expire message will be raised
+    :param max_duplicate_count: Maximum duplicate video before after cookie
+        expire message will be raised
     """
     session = requests.Session()
     session_token = parse_token(cookie)
-    headers = {"authorization": f"bearer {session_token}"}
+    headers = {"authorization": f"Bearer {session_token}"}
     params = {
         "course_id": course.id,
     }
@@ -144,8 +148,9 @@ def download_course(
                 response = session.get(url, headers=headers, params=params)
                 response.raise_for_status()
                 lesson_video_url = response.json()["video_url"]
-                # TODO: Maybe if in future KodeKloud change the video streaming service, this area will need some working.
-                # Try to generalize this for future enhacement?
+                # TODO: Maybe if in future KodeKloud change the video streaming
+                # service, this area will need some working.
+                # Try to generalize this for future enhancement?
                 current_video_url = (
                     f"https://player.vimeo.com/video/{lesson_video_url.split('/')[-1]}"
                 )
@@ -154,9 +159,11 @@ def download_course(
                     and downloaded_videos[current_video_url] > max_duplicate_count
                 ):
                     raise SystemExit(
-                        f"The folowing video is downloaded more than {max_duplicate_count}."
-                        "\nYour cookie might have expired or you don't have access/enrolled to the course."
-                        "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
+                        f"The following video is downloaded more than "
+                        f"{max_duplicate_count}.\nYour cookie might have "
+                        "expired or you don't have access/enrolled to the "
+                        "course.\nPlease refresh/regenerate the cookie or "
+                        "enroll in the course and try again."
                     )
                 download_video_lesson(current_video_url, file_path, cookie, quality)
                 downloaded_videos[current_video_url] += 1
@@ -214,14 +221,15 @@ def download_video_lesson(
             cookie=cookie,
             quality=quality,
         )
-    except yt_dlp.utils.UnsupportedError as ex:
+    except yt_dlp.utils.UnsupportedError:
         logger.error(
             f"Could not download video in link {lesson_video_url}. "
             "Please open link manually and verify that video exists!"
         )
     except yt_dlp.utils.DownloadError as ex:
         logger.error(
-            f"Access denied while downloading video or audio file from link {lesson_video_url}\n{ex}"
+            f"Access denied while downloading video or audio file from link "
+            f"{lesson_video_url}\n{ex}"
         )
 
 
@@ -234,7 +242,7 @@ def download_resource_lesson(lesson_url, file_path: Path, cookie: str) -> None:
     :param cookie: The user's authentication cookie
     """
     # TODO: Did we break this? I have no idea.
-    page = requests.get(lesson_url)
+    page = requests.get(lesson_url, timeout=30)
     soup = BeautifulSoup(page.content, "html.parser")
     content = soup.find("div", class_="learndash_content_wrap")
 

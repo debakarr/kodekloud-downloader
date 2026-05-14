@@ -8,7 +8,7 @@ from kodekloud_downloader.models.courses import ApiResponse, Course
 
 def fetch_courses(page: int, limit: int) -> ApiResponse:
     url = f"https://learn-api.kodekloud.com/api/courses?page={page}&limit={limit}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     response.raise_for_status()
     data = response.json()
     return ApiResponse(**data)
@@ -29,7 +29,7 @@ def collect_all_courses() -> List[Course]:
 
 def fetch_course_detail(slug: str) -> CourseDetail:
     url = f"https://learn-api.kodekloud.com/api/courses/{slug}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     response.raise_for_status()  # Raise an exception for HTTP errors
     data = response.json()
 
