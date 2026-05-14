@@ -1,6 +1,6 @@
 [project]
 name = "kodekloud-downloader"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple downloaded for https://kodekloud.com/"
 readme = "README.md"
 authors = [
