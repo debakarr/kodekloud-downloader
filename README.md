@@ -110,10 +110,24 @@ This will display the FFmpeg version and build information, confirming that the 
 
 
 
-## How to get cookie
-- Sign in to kodekloud.com
-- Download extension such as [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc/related)
-- Download the cookie and save it in some location (You can name it something like `cookie.txt`).
+## 🔐 Authentication
+
+You have two options to authenticate:
+
+### Option 1: Browser-based (recommended)
+
+```console
+kodekloud dl --browser -o . "https://kodekloud.com/courses/..."
+```
+
+Auto-launches Chrome, you sign in once, and the token is extracted automatically.
+Requires `pip install "kodekloud-downloader[browser]"`.
+
+### Option 2: Cookie file
+
+Use [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc/related)
+or a similar extension to export cookies after signing in at kodekloud.com.
+See [Authentication](#authentication-1) section below for detailed steps.
 
 ![](/static/cookie-demo.png)
 
@@ -226,9 +240,9 @@ The `session-cookie` expires after ~1 hour. When you get a 401 error, repeat ste
 
 ## 📚 Usage
 
-After installing the package, you can use the `kodekloud dl` command to download shows from the command line.
+After installing the package, you can use the `kodekloud dl` command to download courses:
 
-```css
+```console
 kodekloud dl --help
 Usage: kodekloud dl [OPTIONS] [COURSE_URL]
 
@@ -237,7 +251,12 @@ Options:
                                   Quality of the video to be downloaded.
   -o, --output-dir TEXT           Output directory where downloaded files will
                                   be store.
-  -c, --cookie TEXT               Cookie to download the courses.  [required]
+  -c, --cookie TEXT               Cookie file exported from browser.
+  --browser                       Extract session token from running Chrome
+                                  (requires playwright).
+  -mdc, --max-duplicate-count INTEGER
+                                  If same video is downloaded this many times,
+                                  then download stops
   --help                          Show this message and exit.
 ```
 
@@ -398,7 +417,10 @@ requests.exceptions.HTTPError: 403 Client Error: Forbidden for url
 
 ---
 
-If you are getting the below message while downloading course, make sure you regenerate your cookie.
+If you are getting a 401 error, your session token has expired.
+**Solutions** (preferred first):
+1. Use `kodekloud dl --browser` (automatically refreshes the token)
+2. Re-export your cookies and add the `session-cookie` manually (see 🔐 Authentication section)
 
 ```console
 requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url
