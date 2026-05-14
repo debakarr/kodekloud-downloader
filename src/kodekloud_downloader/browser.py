@@ -110,7 +110,6 @@ def _launch_chrome_with_debugging(port: int) -> Optional[subprocess.Popen]:
                 f"--user-data-dir={user_data_dir}",
                 "--no-first-run",
                 "--no-default-browser-check",
-                "--no-sandbox",
             ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -171,15 +170,28 @@ def get_session_token_from_browser(
 
         # --- Step 2: auto-launch if needed ---
         if browser is None and auto_launch:
-            logger.info("Launching Chrome with remote debugging on port %d...", port)
-            chrome_proc = _launch_chrome_with_debugging(port)
+            # Use a separate port so it doesn't conflict with manual Chrome
+            auto_port = (
+                port + 1
+                if port == int(os.environ.get("KODEKLOUD_CDP_PORT", "9222"))
+                else port
+            )
+            logger.info(
+                "Launching Chrome with remote debugging on port %d...", auto_port
+            )
+            chrome_proc = _launch_chrome_with_debugging(auto_port)
             if chrome_proc is not None:
-                time.sleep(4)
-                try:
-                    browser = pw.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
-                    logger.info("Chrome launched and connected")
-                except Exception as exc:
-                    logger.error("Failed to connect to launched Chrome: %s", exc)
+                for _ in range(5):  # retry up to 5 times (~10s)
+                    time.sleep(2)
+                    try:
+                        browser = pw.chromium.connect_over_cdp(
+                            f"http://127.0.0.1:{auto_port}"
+                        )
+                        logger.info("Chrome launched and connected")
+                        break
+                    except Exception:
+                        logger.debug("Waiting for Chrome CDP on port %d...", auto_port)
+                        continue
 
         if browser is None:
             print(

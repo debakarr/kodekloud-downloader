@@ -71,6 +71,7 @@ ignore = [
 "src/kodekloud_downloader/browser.py" = [
     "UP045",  # Optional[X] needed for Python 3.8 compat
     "S110",   # try-except-pass is intentional for fallback logic
+    "S112",   # try-except-continue is intentional for retry logic
     "S603",   # subprocess paths are from a hardcoded system list
 ]
 
