@@ -87,7 +87,7 @@ def select_courses(courses: List[Course]) -> List[Course]:
 
 # Characters not allowed in Windows filenames
 _WINDOWS_RESERVED_CHARS = set('\\/:*?"<>|')
-# Reserved names on Windows (case-insensitive)
+# Reserved names on Windows (case-insensitive, with/without extension)
 _WINDOWS_RESERVED_NAMES = {
     "con",
     "prn",
@@ -124,11 +124,16 @@ def sanitize_filename(name: str, max_length: int = 100) -> str:
     :param max_length: Maximum allowed length (default 100).
     :return: A safe filename string.
     """
+    # Replace invalid characters with a safe alternative
     safe = "".join("_" if c in _WINDOWS_RESERVED_CHARS else c for c in name)
+    # Collapse multiple underscores
     while "__" in safe:
         safe = safe.replace("__", "_")
+    # Trim leading/trailing whitespace and dots
     safe = safe.strip(". ")
+    # Truncate
     safe = safe[:max_length].rstrip(". ")
+    # Handle empty result or reserved names
     if not safe or safe.lower().rstrip(".") in _WINDOWS_RESERVED_NAMES:
         safe = "_"
     return safe

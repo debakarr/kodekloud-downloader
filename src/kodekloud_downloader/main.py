@@ -69,7 +69,8 @@ def download_quiz(output_dir: Union[str, Path], sep: bool) -> None:
                 )
 
         if sep and quiz_name:
-            output_file = Path(output_dir) / f"{quiz_name.replace('/', '')}.md"
+            safe_name = sanitize_filename(quiz_name)
+            output_file = Path(output_dir) / f"{safe_name}.md"
             markdown_text = "\n".join(quiz_markdown)
 
             with open(output_file, "w", encoding="utf-8") as f:
