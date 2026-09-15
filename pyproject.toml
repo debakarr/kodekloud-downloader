@@ -74,9 +74,21 @@ ignore = [
     "S112",   # try-except-continue is intentional for retry logic
     "S603",   # subprocess paths are from a hardcoded system list
 ]
+"tests/*" = [
+    "S106",   # allow test passwords/tokens
+    "S108",   # allow /tmp paths in tests
+    "E501",   # allow long test assertion lines
+]
+
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+
+

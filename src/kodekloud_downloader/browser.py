@@ -1,8 +1,9 @@
 """
 Optional browser-based session token extraction via Playwright.
 
-This module allows extracting the HttpOnly ``session-cookie`` directly from
-a Chrome browser via the Chrome DevTools Protocol (CDP).
+This module allows extracting the Firebase authentication token directly from
+a Chrome/Brave browser via the Chrome DevTools Protocol (CDP) or by resolving
+exported session cookies in a lightweight headless browser context.
 
 Usage
 -----
@@ -23,9 +24,10 @@ import logging
 import os
 import platform
 import subprocess
+import tempfile
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ def _import_playwright():
 
 
 def _chrome_default_path() -> Optional[Path]:
-    """Return the default Chrome executable path for the current platform."""
+    """Return the default browser executable path for the current platform."""
     system = platform.system()
     if system == "Windows":
         candidates = [
@@ -68,16 +70,29 @@ def _chrome_default_path() -> Optional[Path]:
             / "Chrome"
             / "Application"
             / "chrome.exe",
+            Path(os.environ.get("LOCALAPPDATA", ""))
+            / "BraveSoftware"
+            / "Brave-Browser"
+            / "Application"
+            / "brave.exe",
+            Path(os.environ.get("PROGRAMFILES", ""))
+            / "BraveSoftware"
+            / "Brave-Browser"
+            / "Application"
+            / "brave.exe",
         ]
     elif system == "Darwin":
         candidates = [
-            Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+            Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+            Path("/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"),
+            Path("/Applications/Chromium.app/Contents/MacOS/Chromium"),
         ]
     elif system == "Linux":
         candidates = [
             Path("/usr/bin/google-chrome"),
             Path("/usr/bin/chromium"),
             Path("/usr/bin/chromium-browser"),
+            Path("/usr/bin/brave-browser"),
         ]
     else:
         return None
@@ -97,9 +112,7 @@ def _launch_chrome_with_debugging(port: int) -> Optional[subprocess.Popen]:
     if chrome_path is None:
         return None
 
-    user_data_dir = (
-        Path(os.environ.get("LOCALAPPDATA", ".")) / "Temp" / "kodekloud-chrome-profile"
-    )
+    user_data_dir = Path(tempfile.gettempdir()) / "kodekloud-chrome-profile"
     user_data_dir.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -119,19 +132,154 @@ def _launch_chrome_with_debugging(port: int) -> Optional[subprocess.Popen]:
         return None
 
 
+def parse_netscape_cookies(cookiefile: str | Path) -> list[dict]:
+    """Parse a Netscape format cookie file into a list of dicts suitable for Playwright.
+
+    :param cookiefile: Path to the cookie file.
+    :return: List of cookie dictionaries for context.add_cookies().
+    """
+    cookies = []
+    with open(cookiefile) as fp:
+        for line in fp:
+            line_str = line.strip()
+            if line_str and not line_str.startswith("#"):
+                parts = line_str.split("\t")
+                if len(parts) > 6:
+                    domain, _flag, path, secure, expiration, name, value = parts[:7]
+                    cookie_dict = {
+                        "domain": domain,
+                        "path": path,
+                        "name": name,
+                        "value": value,
+                        "secure": secure.lower() == "true",
+                    }
+                    try:
+                        exp = float(expiration)
+                        if exp > 0:
+                            cookie_dict["expires"] = exp
+                    except (ValueError, TypeError):
+                        pass
+                    cookies.append(cookie_dict)
+    return cookies
+
+
+def _extract_firebase_token_from_page(page) -> Optional[str]:
+    """Extract the Firebase JWT accessToken from IndexedDB in the page."""
+    try:
+        token = page.evaluate("""async () => {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('firebaseLocalStorageDb');
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('firebaseLocalStorage')) {
+                        resolve(null);
+                        return;
+                    }
+                    const tx = db.transaction('firebaseLocalStorage', 'readonly');
+                    const store = tx.objectStore('firebaseLocalStorage');
+                    const getAll = store.getAll();
+                    getAll.onsuccess = () => {
+                        if (getAll.result && getAll.result.length > 0) {
+                            const val = getAll.result[0].value;
+                            if (
+                                val &&
+                                val.stsTokenManager &&
+                                val.stsTokenManager.accessToken
+                            ) {
+                                resolve(val.stsTokenManager.accessToken);
+                                return;
+                            }
+                        }
+                        resolve(null);
+                    };
+                    getAll.onerror = () => resolve(null);
+                };
+                req.onerror = () => resolve(null);
+            });
+        }""")
+        if token and isinstance(token, str) and token.startswith("ey"):
+            return token
+    except Exception as e:
+        logger.debug("IndexedDB token extraction attempt: %s", e)
+    return None
+
+
 def _extract_session_cookie(context) -> Optional[str]:
-    """Extract the ``session-cookie`` from the Playwright browser context."""
+    """Extract any legacy session-cookie from the Playwright browser context."""
     for cookie in context.cookies():
         if cookie["name"] == "session-cookie":
             return cookie["value"]
     return None
 
 
+def get_token_from_cookie_file(cookiefile: str | Path) -> Optional[str]:
+    """Exchange exported cookies (e.g. _secure-user-session) for a Firebase ID token.
+
+    Launches a lightweight headless browser, loads the cookies, navigates to
+    KodeKloud, and extracts the Firebase accessToken from IndexedDB.
+
+    :param cookiefile: Path to the cookie file.
+    :return: The Firebase JWT token if resolved, otherwise None.
+    """
+    sp = _import_playwright()
+    if sp is None:
+        logger.error("Playwright is not installed.")
+        return None
+
+    cookies = parse_netscape_cookies(cookiefile)
+    if not cookies:
+        return None
+
+    chrome_path = _chrome_default_path()
+    with sp() as pw:
+        launch_kwargs: dict[str, Any] = {"headless": True}
+        if chrome_path is not None:
+            launch_kwargs["executable_path"] = str(chrome_path)
+
+        try:
+            browser = pw.chromium.launch(**launch_kwargs)
+        except Exception as e:
+            logger.error("Could not launch browser for cookie exchange: %s", e)
+            return None
+
+        context = browser.new_context()
+        try:
+            context.add_cookies(cookies)
+        except Exception as e:
+            logger.debug("Warning setting cookies: %s", e)
+
+        page = context.new_page()
+        intercepted_token: Optional[str] = None
+
+        def _handle_request(request):
+            nonlocal intercepted_token
+            if "learn-api.kodekloud.com" in request.url:
+                auth = request.headers.get("authorization", "")
+                if auth.startswith("Bearer ey"):
+                    intercepted_token = auth.split(" ", 1)[1]
+
+        page.on("request", _handle_request)
+
+        try:
+            page.goto(
+                "https://learn.kodekloud.com/learn/courses",
+                wait_until="networkidle",
+                timeout=30000,
+            )
+        except Exception as e:
+            logger.debug("Page navigation: %s", e)
+
+        time.sleep(2)
+        token = _extract_firebase_token_from_page(page) or intercepted_token
+        browser.close()
+        return token
+
+
 def get_session_token_from_browser(
     port: int = CDP_PORT,
     auto_launch: bool = False,
 ) -> Optional[str]:
-    """Extract the ``session-cookie`` from a Chrome browser via CDP.
+    """Extract the authentication token from a Chrome browser via CDP.
 
     Tries connecting to a running Chrome instance first. If that fails
     and ``auto_launch`` is enabled, starts a new Chrome with remote
@@ -147,7 +295,7 @@ def get_session_token_from_browser(
 
     Returns
     -------
-    The ``session-cookie`` value, or None.
+    The authentication token (Firebase JWT or session-cookie), or None.
     """
     sp = _import_playwright()
     if sp is None:
@@ -170,7 +318,6 @@ def get_session_token_from_browser(
 
         # --- Step 2: auto-launch if needed ---
         if browser is None and auto_launch:
-            # Use a separate port so it doesn't conflict with manual Chrome
             auto_port = (
                 port + 1
                 if port == int(os.environ.get("KODEKLOUD_CDP_PORT", "9222"))
@@ -201,7 +348,7 @@ def get_session_token_from_browser(
             )
             return None
 
-        # --- Step 3: navigate to KodeKloud courses ---
+        # --- Step 3: inspect pages and navigate ---
         try:
             context = browser.contexts[0]
         except IndexError:
@@ -210,10 +357,26 @@ def get_session_token_from_browser(
 
         page = context.pages[0] if context.pages else context.new_page()
 
-        # Check if we already have the cookie (connecting to existing browser)
-        token = _extract_session_cookie(context)
+        # Listen for API calls carrying Bearer tokens
+        intercepted_token: Optional[str] = None
+
+        def _handle_request(request):
+            nonlocal intercepted_token
+            if "learn-api.kodekloud.com" in request.url:
+                auth = request.headers.get("authorization", "")
+                if auth.startswith("Bearer ey"):
+                    intercepted_token = auth.split(" ", 1)[1]
+
+        page.on("request", _handle_request)
+
+        # Check existing session in page / cookies
+        token = (
+            _extract_firebase_token_from_page(page)
+            or _extract_session_cookie(context)
+            or intercepted_token
+        )
         if token:
-            logger.info("Session token found in existing cookies")
+            logger.info("Session token found in existing browser state")
             if chrome_proc is not None:
                 chrome_proc.terminate()
             else:
@@ -224,18 +387,21 @@ def get_session_token_from_browser(
         logger.info("Navigating to KodeKloud...")
         try:
             page.goto(
-                "https://learn.kodekloud.com/user/courses",
+                "https://learn.kodekloud.com/learn/courses",
                 wait_until="networkidle",
                 timeout=30000,
             )
         except Exception:
             pass
 
-        # Small pause for SPA redirects
         time.sleep(2)
 
         # Check again after navigation
-        token = _extract_session_cookie(context)
+        token = (
+            _extract_firebase_token_from_page(page)
+            or _extract_session_cookie(context)
+            or intercepted_token
+        )
         if token:
             logger.info("Session token obtained after navigation")
             if chrome_proc is not None:
@@ -245,22 +411,6 @@ def get_session_token_from_browser(
             return token
 
         # --- Step 4: if not logged in, prompt user ---
-        # Set up a network response handler to catch the session-cookie
-        # from the set-id-token API call
-        intercepted_token: Optional[str] = None
-
-        def _handle_response(response):
-            nonlocal intercepted_token
-            if "/api/set-id-token" in response.url:
-                set_cookie = response.headers.get("set-cookie", "")
-                for part in set_cookie.split(";"):
-                    part = part.strip()
-                    if part.startswith("session-cookie="):
-                        intercepted_token = part.split("=", 1)[1]
-                        logger.info("Intercepted session-cookie from API")
-
-        page.on("response", _handle_response)
-
         current_url = page.url.lower()
         if all(
             word not in current_url for word in ["sign-in", "login", "auth", "signin"]
@@ -283,34 +433,18 @@ def get_session_token_from_browser(
         except (EOFError, KeyboardInterrupt):
             pass
 
-        # Wait for the session-cookie to arrive via network interception
-        logger.info("Waiting for session-cookie...")
-        for _ in range(20):  # wait up to ~40s
-            if intercepted_token:
+        # Wait for the token after user sign in
+        logger.info("Waiting for token...")
+        for _ in range(15):  # wait up to ~30s
+            token = (
+                _extract_firebase_token_from_page(page)
+                or _extract_session_cookie(context)
+                or intercepted_token
+            )
+            if token:
                 break
             time.sleep(2)
 
-        token = intercepted_token
-
-        # Fallback: try extracting from cookies
-        if token is None:
-            try:
-                page.goto(
-                    "https://learn.kodekloud.com/user/courses",
-                    wait_until="networkidle",
-                    timeout=30000,
-                )
-            except Exception:
-                pass
-            for _ in range(10):
-                time.sleep(2)
-                try:
-                    token = _extract_session_cookie(context)
-                except Exception:
-                    continue
-                if token:
-                    break
-
         # Cleanup
         if chrome_proc is not None:
             chrome_proc.terminate()
@@ -321,48 +455,7 @@ def get_session_token_from_browser(
             logger.info("Session token extracted successfully")
         else:
             print(
-                "Could not find session-cookie. Ensure you are signed in to KodeKloud."
-            )
-
-        return token
-
-        # --- Step 4: if not logged in, prompt user ---
-        current_url = page.url
-        if "sign-in" in current_url.lower() or "login" in current_url.lower():
-            print(
-                "Please sign in to KodeKloud in the opened browser window, "
-                "then press Enter here..."
-            )
-            try:
-                input()
-            except (EOFError, KeyboardInterrupt):
-                pass
-
-            # Wait a moment for redirect after login
-            time.sleep(3)
-            try:
-                page.goto(
-                    "https://learn.kodekloud.com/user/courses",
-                    wait_until="networkidle",
-                    timeout=30000,
-                )
-            except Exception:
-                pass
-
-        # --- Step 5: final extraction attempt ---
-        token = _extract_session_cookie(context)
-
-        # Cleanup
-        if chrome_proc is not None:
-            chrome_proc.terminate()
-        else:
-            browser.close()
-
-        if token:
-            logger.info("Session token extracted successfully")
-        else:
-            print(
-                "Could not find session-cookie. Ensure you are signed in to KodeKloud."
+                "Could not find session token. Ensure you are signed in to KodeKloud."
             )
 
         return token
